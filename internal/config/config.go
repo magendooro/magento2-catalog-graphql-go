@@ -1,6 +1,7 @@
 package config
 
 import (
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -59,20 +60,49 @@ func Load() (*Config, error) {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("./config")
+	viper.AddConfigPath("/config")
 
+	// Defaults
 	viper.SetDefault("server.port", "8080")
 	viper.SetDefault("server.read_timeout", "30s")
 	viper.SetDefault("server.write_timeout", "30s")
+	viper.SetDefault("database.host", "localhost")
+	viper.SetDefault("database.port", "3306")
+	viper.SetDefault("database.user", "root")
+	viper.SetDefault("database.name", "magento")
 	viper.SetDefault("database.max_open_conns", 25)
 	viper.SetDefault("database.max_idle_conns", 10)
 	viper.SetDefault("database.conn_max_lifetime", "5m")
 	viper.SetDefault("database.conn_max_idle_time", "1m")
+	viper.SetDefault("redis.host", "127.0.0.1")
+	viper.SetDefault("redis.port", "6379")
+	viper.SetDefault("redis.db", 0)
 	viper.SetDefault("graphql.complexity_limit", 1000)
 	viper.SetDefault("graphql.max_depth", 15)
+	viper.SetDefault("logging.level", "info")
+	viper.SetDefault("logging.pretty", false)
 
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, err
-	}
+	// Environment variable overrides: DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, etc.
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
+
+	// Explicit bindings for common env vars (allows shorter names)
+	viper.BindEnv("database.host", "DB_HOST")
+	viper.BindEnv("database.port", "DB_PORT")
+	viper.BindEnv("database.user", "DB_USER")
+	viper.BindEnv("database.password", "DB_PASSWORD")
+	viper.BindEnv("database.name", "DB_NAME")
+	viper.BindEnv("redis.host", "REDIS_HOST")
+	viper.BindEnv("redis.port", "REDIS_PORT")
+	viper.BindEnv("redis.password", "REDIS_PASSWORD")
+	viper.BindEnv("redis.db", "REDIS_DB")
+	viper.BindEnv("server.port", "SERVER_PORT", "PORT")
+	viper.BindEnv("media.base_url", "MEDIA_BASE_URL")
+	viper.BindEnv("logging.level", "LOG_LEVEL")
+	viper.BindEnv("logging.pretty", "LOG_PRETTY")
+
+	// Config file is optional — env vars and defaults are sufficient
+	_ = viper.ReadInConfig()
 
 	var cfg Config
 	if err := viper.Unmarshal(&cfg); err != nil {

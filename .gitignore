@@ -30,6 +30,7 @@ log/
 # Local config (use config.yaml.example as template)
 config/config.yaml
 config/config.local.yaml
+.env
 
 # Internal development docs
 .dev/
