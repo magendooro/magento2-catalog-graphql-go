@@ -86,7 +86,13 @@ See [docs/setup.md](docs/setup.md) for the full setup guide including database u
 |----------|-------------|
 | [docs/setup.md](docs/setup.md) | Installation, configuration, deployment |
 | [docs/architecture.md](docs/architecture.md) | Architecture, design decisions, project structure |
+| [docs/production-deployment.md](docs/production-deployment.md) | Production routing (Cloudflare, Nginx, HAProxy) |
+| [docs/customization.md](docs/customization.md) | How to customize and extend the service |
 | [docs/FEATURES_AND_TESTS.md](docs/FEATURES_AND_TESTS.md) | Feature list, test coverage matrix, root-cause analysis |
+
+## Developed by
+
+Built by [magendoo.ro](https://magendoo.ro/) — [Golang development services](https://magendoo.ro/golang-services) for e-commerce and high-performance applications.
 
 ## License
 
