@@ -19,15 +19,15 @@ import (
 // Magento, then diffs the responses field by field.
 //
 // Prerequisites:
-//   - Go service running at GO_GRAPHQL_URL   (default http://localhost:8082/graphql)
-//   - Magento  running at MAGE_GRAPHQL_URL   (default http://jti.local/graphql)
+//   - Go service running at GO_GRAPHQL_URL   (default http://localhost:8080/graphql)
+//   - Magento  running at MAGE_GRAPHQL_URL   (default http://localhost/graphql)
 //
 // Run:
-//   go test -v -run TestCompare -tags comparison -count=1 -timeout 120s
+//   go test -v -run TestCompare -count=1 -timeout 120s
 
 const (
-	defaultGoURL   = "http://localhost:8082/graphql"
-	defaultMageURL = "http://jti.local/graphql"
+	defaultGoURL   = "http://localhost:8080/graphql"
+	defaultMageURL = "http://localhost/graphql"
 	storeCode      = "default"
 )
 
@@ -534,7 +534,7 @@ func TestCompareCategoryFilter(t *testing.T) {
 
 func TestComparePriceFilter(t *testing.T) {
 	query := `{
-		products(filter: { price: { from: "50", to: "200" } }, pageSize: 50, sort: { price: ASC }) {
+		products(filter: { price: { from: "50", to: "200" } }, pageSize: 100, sort: { price: ASC }) {
 			items { sku name price_range { minimum_price { final_price { value currency } } } }
 			total_count
 		}
@@ -542,7 +542,7 @@ func TestComparePriceFilter(t *testing.T) {
 
 	goRes, mageRes := queryBoth(t, query)
 
-	// Sort by SKU for items that may have equal prices
+	// Sort by SKU: MySQL and Elasticsearch may order same-price products differently
 	for _, res := range []*queryResult{goRes, mageRes} {
 		items := getItems(res)
 		sortItemsBySKU(items)
@@ -554,13 +554,24 @@ func TestComparePriceFilter(t *testing.T) {
 
 func TestCompareNameFilter(t *testing.T) {
 	query := `{
-		products(filter: { name: { match: "Aura" } }, sort: { name: ASC }) {
+		products(filter: { name: { match: "Aura" } }, sort: { name: ASC }, pageSize: 100) {
 			items { sku name }
 			total_count
 		}
 	}`
 
 	goRes, mageRes := queryBoth(t, query)
+
+	// Sort items by SKU for stable comparison (MySQL vs Elasticsearch collation differs on edge cases)
+	for _, res := range []*queryResult{goRes, mageRes} {
+		items := getItems(res)
+		sort.Slice(items, func(i, j int) bool {
+			si := items[i].(map[string]interface{})["sku"].(string)
+			sj := items[j].(map[string]interface{})["sku"].(string)
+			return si < sj
+		})
+	}
+
 	diffs := deepDiff("products", getProducts(goRes), getProducts(mageRes), map[string]bool{})
 	reportDiffs(t, diffs)
 }
@@ -622,27 +633,7 @@ func TestCompareConfigurableProduct(t *testing.T) {
 }
 
 func TestCompareBundleProduct(t *testing.T) {
-	// Our schema uses "bundle_items", Magento uses "items" — query each separately
-	goQuery := `{
-		products(filter: { sku: { eq: "B5247819" } }) {
-			items {
-				sku name __typename
-				... on BundleProduct {
-					dynamic_price dynamic_sku dynamic_weight
-					price_view ship_bundle_items
-					bundle_items {
-						option_id uid title required type position
-						options {
-							id uid label qty is_default
-							product { sku name }
-						}
-					}
-				}
-			}
-		}
-	}`
-
-	mageQuery := `{
+	query := `{
 		products(filter: { sku: { eq: "B5247819" } }) {
 			items {
 				sku name __typename
@@ -652,7 +643,7 @@ func TestCompareBundleProduct(t *testing.T) {
 					items {
 						option_id uid title required type position
 						options {
-							id uid label qty is_default
+							id uid label qty quantity is_default
 							product { sku name }
 						}
 					}
@@ -661,34 +652,13 @@ func TestCompareBundleProduct(t *testing.T) {
 		}
 	}`
 
-	goRes, _, goErr := queryEndpoint(goURL(), goQuery, storeCode)
-	if goErr != nil {
-		t.Fatalf("Go error: %v", goErr)
-	}
-	mageRes, _, mageErr := queryEndpoint(mageURL(), mageQuery, storeCode)
-	if mageErr != nil {
-		t.Fatalf("Magento error: %v", mageErr)
-	}
+	goRes, mageRes := queryBoth(t, query)
 
-	if len(mageRes.Errors) > 0 {
-		t.Fatalf("Magento errors: %v", mageRes.Errors)
-	}
-
-	// Rename Magento's "items" to "bundle_items" for comparison
-	mageItems := getItems(mageRes)
-	for _, item := range mageItems {
-		m := item.(map[string]interface{})
-		if v, ok := m["items"]; ok {
-			m["bundle_items"] = v
-			delete(m, "items")
-		}
-	}
-
-	// Sort bundle_items by option_id, options within by id
-	for _, items := range [][]interface{}{getItems(goRes), mageItems} {
-		for _, item := range items {
+	// Sort bundle items by option_id, options within by id
+	for _, res := range []*queryResult{goRes, mageRes} {
+		for _, item := range getItems(res) {
 			m := item.(map[string]interface{})
-			if bundleItems, ok := m["bundle_items"].([]interface{}); ok {
+			if bundleItems, ok := m["items"].([]interface{}); ok {
 				sort.Slice(bundleItems, func(i, j int) bool {
 					oi := bundleItems[i].(map[string]interface{})["option_id"].(float64)
 					oj := bundleItems[j].(map[string]interface{})["option_id"].(float64)
@@ -708,7 +678,6 @@ func TestCompareBundleProduct(t *testing.T) {
 		}
 	}
 
-	t.Log("NOTE: Schema difference — Go uses 'bundle_items', Magento uses 'items'")
 	diffs := deepDiff("products", getProducts(goRes), getProducts(mageRes), map[string]bool{})
 	reportDiffs(t, diffs)
 }

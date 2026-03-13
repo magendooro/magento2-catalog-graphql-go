@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/app"
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/config"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/app"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/config"
 )
 
 func main() {

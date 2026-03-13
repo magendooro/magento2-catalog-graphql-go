@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/florinel-chis/magento2-catalog-graphql-go/graph/model"
+	"github.com/magendooro/magento2-catalog-graphql-go/graph/model"
 )
 
 type PriceRepository struct {
@@ -135,28 +135,37 @@ func BuildPriceRange(pd *PriceData, currency model.CurrencyEnum) *model.PriceRan
 	}
 
 	regularPrice := valOrZero(pd.Price)
+	finalPrice := valOrZero(pd.FinalPrice)
 	minPrice := valOrZero(pd.MinPrice)
 	maxPrice := valOrZero(pd.MaxPrice)
 
-	// For configurable/bundle products, price may be 0 — use min/max as regular price
-	minRegular := regularPrice
-	maxRegular := regularPrice
-	if regularPrice == 0 {
+	var minRegular, maxRegular, minFinal, maxFinal float64
+
+	if regularPrice > 0 {
+		// Product has its own price (simple, fixed-price bundle)
+		minRegular = regularPrice
+		maxRegular = regularPrice
+		minFinal = finalPrice
+		maxFinal = finalPrice
+	} else {
+		// Price derived from children (configurable, dynamic bundle)
 		minRegular = minPrice
 		maxRegular = maxPrice
+		minFinal = minPrice
+		maxFinal = maxPrice
 	}
 
-	minDiscount := computeDiscount(minRegular, minPrice)
-	maxDiscount := computeDiscount(maxRegular, maxPrice)
+	minDiscount := computeDiscount(minRegular, minFinal)
+	maxDiscount := computeDiscount(maxRegular, maxFinal)
 
 	minProductPrice := &model.ProductPrice{
 		RegularPrice: &model.Money{Value: &minRegular, Currency: &currency},
-		FinalPrice:   &model.Money{Value: &minPrice, Currency: &currency},
+		FinalPrice:   &model.Money{Value: &minFinal, Currency: &currency},
 		Discount:     minDiscount,
 	}
 	maxProductPrice := &model.ProductPrice{
 		RegularPrice: &model.Money{Value: &maxRegular, Currency: &currency},
-		FinalPrice:   &model.Money{Value: &maxPrice, Currency: &currency},
+		FinalPrice:   &model.Money{Value: &maxFinal, Currency: &currency},
 		Discount:     maxDiscount,
 	}
 

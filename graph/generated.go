@@ -13,7 +13,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/florinel-chis/magento2-catalog-graphql-go/graph/model"
+	"github.com/magendooro/magento2-catalog-graphql-go/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -99,12 +99,12 @@ type ComplexityRoot struct {
 		PriceType         func(childComplexity int) int
 		Product           func(childComplexity int) int
 		Qty               func(childComplexity int) int
+		Quantity          func(childComplexity int) int
 		UID               func(childComplexity int) int
 	}
 
 	BundleProduct struct {
 		AttributeSetID       func(childComplexity int) int
-		BundleItems          func(childComplexity int) int
 		CanonicalURL         func(childComplexity int) int
 		Categories           func(childComplexity int) int
 		CountryOfManufacture func(childComplexity int) int
@@ -118,6 +118,7 @@ type ComplexityRoot struct {
 		GiftMessageAvailable func(childComplexity int) int
 		ID                   func(childComplexity int) int
 		Image                func(childComplexity int) int
+		Items                func(childComplexity int) int
 		Manufacturer         func(childComplexity int) int
 		MaxSaleQty           func(childComplexity int) int
 		MediaGallery         func(childComplexity int) int
@@ -1121,6 +1122,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.BundleItemOption.Qty(childComplexity), true
+	case "BundleItemOption.quantity":
+		if e.ComplexityRoot.BundleItemOption.Quantity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.BundleItemOption.Quantity(childComplexity), true
 	case "BundleItemOption.uid":
 		if e.ComplexityRoot.BundleItemOption.UID == nil {
 			break
@@ -1134,12 +1141,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.BundleProduct.AttributeSetID(childComplexity), true
-	case "BundleProduct.bundle_items":
-		if e.ComplexityRoot.BundleProduct.BundleItems == nil {
-			break
-		}
-
-		return e.ComplexityRoot.BundleProduct.BundleItems(childComplexity), true
 	case "BundleProduct.canonical_url":
 		if e.ComplexityRoot.BundleProduct.CanonicalURL == nil {
 			break
@@ -1223,6 +1224,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.BundleProduct.Image(childComplexity), true
+	case "BundleProduct.items":
+		if e.ComplexityRoot.BundleProduct.Items == nil {
+			break
+		}
+
+		return e.ComplexityRoot.BundleProduct.Items(childComplexity), true
 	case "BundleProduct.manufacturer":
 		if e.ComplexityRoot.BundleProduct.Manufacturer == nil {
 			break
@@ -4739,7 +4746,7 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_BundleProduct_custom_attributesV2_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filters", ec.unmarshalOAttributeFilterInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeFilterInput)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filters", ec.unmarshalOAttributeFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeFilterInput)
 	if err != nil {
 		return nil, err
 	}
@@ -4776,7 +4783,7 @@ func (ec *executionContext) field_CategoryTree_products_args(ctx context.Context
 		return nil, err
 	}
 	args["currentPage"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "sort", ec.unmarshalOProductAttributeSortInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductAttributeSortInput)
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "sort", ec.unmarshalOProductAttributeSortInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductAttributeSortInput)
 	if err != nil {
 		return nil, err
 	}
@@ -4798,7 +4805,7 @@ func (ec *executionContext) field_ConfigurableProduct_configurable_product_optio
 func (ec *executionContext) field_ConfigurableProduct_custom_attributesV2_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filters", ec.unmarshalOAttributeFilterInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeFilterInput)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filters", ec.unmarshalOAttributeFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeFilterInput)
 	if err != nil {
 		return nil, err
 	}
@@ -4825,7 +4832,7 @@ func (ec *executionContext) field_ConfigurableProduct_reviews_args(ctx context.C
 func (ec *executionContext) field_GroupedProduct_custom_attributesV2_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filters", ec.unmarshalOAttributeFilterInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeFilterInput)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filters", ec.unmarshalOAttributeFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeFilterInput)
 	if err != nil {
 		return nil, err
 	}
@@ -4852,7 +4859,7 @@ func (ec *executionContext) field_GroupedProduct_reviews_args(ctx context.Contex
 func (ec *executionContext) field_Products_aggregations_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filter", ec.unmarshalOAggregationsFilterInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationsFilterInput)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filter", ec.unmarshalOAggregationsFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationsFilterInput)
 	if err != nil {
 		return nil, err
 	}
@@ -4879,7 +4886,7 @@ func (ec *executionContext) field_Query_products_args(ctx context.Context, rawAr
 		return nil, err
 	}
 	args["search"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "filter", ec.unmarshalOProductAttributeFilterInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductAttributeFilterInput)
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "filter", ec.unmarshalOProductAttributeFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductAttributeFilterInput)
 	if err != nil {
 		return nil, err
 	}
@@ -4894,7 +4901,7 @@ func (ec *executionContext) field_Query_products_args(ctx context.Context, rawAr
 		return nil, err
 	}
 	args["currentPage"] = arg3
-	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "sort", ec.unmarshalOProductAttributeSortInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductAttributeSortInput)
+	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "sort", ec.unmarshalOProductAttributeSortInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductAttributeSortInput)
 	if err != nil {
 		return nil, err
 	}
@@ -4905,7 +4912,7 @@ func (ec *executionContext) field_Query_products_args(ctx context.Context, rawAr
 func (ec *executionContext) field_SimpleProduct_custom_attributesV2_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filters", ec.unmarshalOAttributeFilterInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeFilterInput)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filters", ec.unmarshalOAttributeFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeFilterInput)
 	if err != nil {
 		return nil, err
 	}
@@ -4932,7 +4939,7 @@ func (ec *executionContext) field_SimpleProduct_reviews_args(ctx context.Context
 func (ec *executionContext) field_VirtualProduct_custom_attributesV2_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filters", ec.unmarshalOAttributeFilterInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeFilterInput)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filters", ec.unmarshalOAttributeFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeFilterInput)
 	if err != nil {
 		return nil, err
 	}
@@ -5105,7 +5112,7 @@ func (ec *executionContext) _Aggregation_options(ctx context.Context, field grap
 			return obj.Options, nil
 		},
 		nil,
-		ec.marshalOAggregationOption2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationOption,
+		ec.marshalOAggregationOption2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationOption,
 		true,
 		false,
 	)
@@ -5258,7 +5265,7 @@ func (ec *executionContext) _AttributeMetadataError_type(ctx context.Context, fi
 			return obj.Type, nil
 		},
 		nil,
-		ec.marshalNAttributeMetadataErrorType2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeMetadataErrorType,
+		ec.marshalNAttributeMetadataErrorType2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeMetadataErrorType,
 		true,
 		true,
 	)
@@ -5403,7 +5410,7 @@ func (ec *executionContext) _AttributeSelectedOptions_selected_options(ctx conte
 			return obj.SelectedOptions, nil
 		},
 		nil,
-		ec.marshalNAttributeSelectedOption2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeSelectedOptionᚄ,
+		ec.marshalNAttributeSelectedOption2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeSelectedOptionᚄ,
 		true,
 		true,
 	)
@@ -5873,7 +5880,7 @@ func (ec *executionContext) _BundleItem_options(ctx context.Context, field graph
 			return obj.Options, nil
 		},
 		nil,
-		ec.marshalOBundleItemOption2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItemOption,
+		ec.marshalOBundleItemOption2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItemOption,
 		true,
 		false,
 	)
@@ -5895,6 +5902,8 @@ func (ec *executionContext) fieldContext_BundleItem_options(_ context.Context, f
 				return ec.fieldContext_BundleItemOption_label(ctx, field)
 			case "qty":
 				return ec.fieldContext_BundleItemOption_qty(ctx, field)
+			case "quantity":
+				return ec.fieldContext_BundleItemOption_quantity(ctx, field)
 			case "position":
 				return ec.fieldContext_BundleItemOption_position(ctx, field)
 			case "is_default":
@@ -6030,6 +6039,35 @@ func (ec *executionContext) fieldContext_BundleItemOption_qty(_ context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _BundleItemOption_quantity(ctx context.Context, field graphql.CollectedField, obj *model.BundleItemOption) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_BundleItemOption_quantity,
+		func(ctx context.Context) (any, error) {
+			return obj.Quantity, nil
+		},
+		nil,
+		ec.marshalOFloat2ᚖfloat64,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_BundleItemOption_quantity(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BundleItemOption",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _BundleItemOption_position(ctx context.Context, field graphql.CollectedField, obj *model.BundleItemOption) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -6127,7 +6165,7 @@ func (ec *executionContext) _BundleItemOption_price_type(ctx context.Context, fi
 			return obj.PriceType, nil
 		},
 		nil,
-		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
+		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
 		true,
 		false,
 	)
@@ -6185,7 +6223,7 @@ func (ec *executionContext) _BundleItemOption_product(ctx context.Context, field
 			return obj.Product, nil
 		},
 		nil,
-		ec.marshalOProductInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -6388,7 +6426,7 @@ func (ec *executionContext) _BundleProduct_description(ctx context.Context, fiel
 			return obj.Description, nil
 		},
 		nil,
-		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
+		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
 		true,
 		false,
 	)
@@ -6421,7 +6459,7 @@ func (ec *executionContext) _BundleProduct_short_description(ctx context.Context
 			return obj.ShortDescription, nil
 		},
 		nil,
-		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
+		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
 		true,
 		false,
 	)
@@ -6860,7 +6898,7 @@ func (ec *executionContext) _BundleProduct_gift_message_available(ctx context.Co
 			return obj.GiftMessageAvailable, nil
 		},
 		nil,
-		ec.marshalOString2ᚖstring,
+		ec.marshalOBoolean2ᚖbool,
 		true,
 		false,
 	)
@@ -6873,7 +6911,7 @@ func (ec *executionContext) fieldContext_BundleProduct_gift_message_available(_ 
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6918,7 +6956,7 @@ func (ec *executionContext) _BundleProduct_image(ctx context.Context, field grap
 			return obj.Image, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -6959,7 +6997,7 @@ func (ec *executionContext) _BundleProduct_small_image(ctx context.Context, fiel
 			return obj.SmallImage, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -7000,7 +7038,7 @@ func (ec *executionContext) _BundleProduct_thumbnail(ctx context.Context, field 
 			return obj.Thumbnail, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -7070,7 +7108,7 @@ func (ec *executionContext) _BundleProduct_media_gallery(ctx context.Context, fi
 			return obj.MediaGallery, nil
 		},
 		nil,
-		ec.marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface,
+		ec.marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface,
 		true,
 		false,
 	)
@@ -7099,7 +7137,7 @@ func (ec *executionContext) _BundleProduct_media_gallery_entries(ctx context.Con
 			return obj.MediaGalleryEntries, nil
 		},
 		nil,
-		ec.marshalOMediaGalleryEntry2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry,
+		ec.marshalOMediaGalleryEntry2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry,
 		true,
 		false,
 	)
@@ -7150,7 +7188,7 @@ func (ec *executionContext) _BundleProduct_price_range(ctx context.Context, fiel
 			return obj.PriceRange, nil
 		},
 		nil,
-		ec.marshalNPriceRange2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceRange,
+		ec.marshalNPriceRange2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceRange,
 		true,
 		true,
 	)
@@ -7185,7 +7223,7 @@ func (ec *executionContext) _BundleProduct_price(ctx context.Context, field grap
 			return obj.Price, nil
 		},
 		nil,
-		ec.marshalOProductPrices2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrices,
+		ec.marshalOProductPrices2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrices,
 		true,
 		false,
 	)
@@ -7222,7 +7260,7 @@ func (ec *executionContext) _BundleProduct_price_tiers(ctx context.Context, fiel
 			return obj.PriceTiers, nil
 		},
 		nil,
-		ec.marshalOTierPrice2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice,
+		ec.marshalOTierPrice2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice,
 		true,
 		false,
 	)
@@ -7259,7 +7297,7 @@ func (ec *executionContext) _BundleProduct_tier_prices(ctx context.Context, fiel
 			return obj.TierPrices, nil
 		},
 		nil,
-		ec.marshalOProductTierPrices2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices,
+		ec.marshalOProductTierPrices2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices,
 		true,
 		false,
 	)
@@ -7300,7 +7338,7 @@ func (ec *executionContext) _BundleProduct_categories(ctx context.Context, field
 			return obj.Categories, nil
 		},
 		nil,
-		ec.marshalOCategoryInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface,
+		ec.marshalOCategoryInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface,
 		true,
 		false,
 	)
@@ -7329,7 +7367,7 @@ func (ec *executionContext) _BundleProduct_stock_status(ctx context.Context, fie
 			return obj.StockStatus, nil
 		},
 		nil,
-		ec.marshalOProductStockStatus2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductStockStatus,
+		ec.marshalOProductStockStatus2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductStockStatus,
 		true,
 		false,
 	)
@@ -7561,7 +7599,7 @@ func (ec *executionContext) _BundleProduct_url_rewrites(ctx context.Context, fie
 			return obj.URLRewrites, nil
 		},
 		nil,
-		ec.marshalOUrlRewrite2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite,
+		ec.marshalOUrlRewrite2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite,
 		true,
 		false,
 	)
@@ -7596,7 +7634,7 @@ func (ec *executionContext) _BundleProduct_related_products(ctx context.Context,
 			return obj.RelatedProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -7625,7 +7663,7 @@ func (ec *executionContext) _BundleProduct_upsell_products(ctx context.Context, 
 			return obj.UpsellProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -7654,7 +7692,7 @@ func (ec *executionContext) _BundleProduct_crosssell_products(ctx context.Contex
 			return obj.CrosssellProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -7683,7 +7721,7 @@ func (ec *executionContext) _BundleProduct_product_links(ctx context.Context, fi
 			return obj.ProductLinks, nil
 		},
 		nil,
-		ec.marshalOProductLink2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink,
+		ec.marshalOProductLink2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink,
 		true,
 		false,
 	)
@@ -7782,7 +7820,7 @@ func (ec *executionContext) _BundleProduct_reviews(ctx context.Context, field gr
 			return obj.Reviews, nil
 		},
 		nil,
-		ec.marshalNProductReviews2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviews,
+		ec.marshalNProductReviews2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviews,
 		true,
 		true,
 	)
@@ -7828,7 +7866,7 @@ func (ec *executionContext) _BundleProduct_custom_attributesV2(ctx context.Conte
 			return obj.CustomAttributesV2, nil
 		},
 		nil,
-		ec.marshalOProductCustomAttributes2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductCustomAttributes,
+		ec.marshalOProductCustomAttributes2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductCustomAttributes,
 		true,
 		false,
 	)
@@ -7874,7 +7912,7 @@ func (ec *executionContext) _BundleProduct_websites(ctx context.Context, field g
 			return obj.Websites, nil
 		},
 		nil,
-		ec.marshalOWebsite2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite,
+		ec.marshalOWebsite2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite,
 		true,
 		false,
 	)
@@ -7944,7 +7982,7 @@ func (ec *executionContext) _BundleProduct_options(ctx context.Context, field gr
 			return obj.Options, nil
 		},
 		nil,
-		ec.marshalOCustomizableOptionInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface,
+		ec.marshalOCustomizableOptionInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface,
 		true,
 		false,
 	)
@@ -8031,7 +8069,7 @@ func (ec *executionContext) _BundleProduct_type(ctx context.Context, field graph
 			return obj.Type, nil
 		},
 		nil,
-		ec.marshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum,
+		ec.marshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum,
 		true,
 		false,
 	)
@@ -8147,7 +8185,7 @@ func (ec *executionContext) _BundleProduct_price_view(ctx context.Context, field
 			return obj.PriceView, nil
 		},
 		nil,
-		ec.marshalOPriceViewEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceViewEnum,
+		ec.marshalOPriceViewEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceViewEnum,
 		true,
 		false,
 	)
@@ -8176,7 +8214,7 @@ func (ec *executionContext) _BundleProduct_ship_bundle_items(ctx context.Context
 			return obj.ShipBundleItems, nil
 		},
 		nil,
-		ec.marshalOShipBundleItemsEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐShipBundleItemsEnum,
+		ec.marshalOShipBundleItemsEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐShipBundleItemsEnum,
 		true,
 		false,
 	)
@@ -8195,23 +8233,23 @@ func (ec *executionContext) fieldContext_BundleProduct_ship_bundle_items(_ conte
 	return fc, nil
 }
 
-func (ec *executionContext) _BundleProduct_bundle_items(ctx context.Context, field graphql.CollectedField, obj *model.BundleProduct) (ret graphql.Marshaler) {
+func (ec *executionContext) _BundleProduct_items(ctx context.Context, field graphql.CollectedField, obj *model.BundleProduct) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_BundleProduct_bundle_items,
+		ec.fieldContext_BundleProduct_items,
 		func(ctx context.Context) (any, error) {
-			return obj.BundleItems, nil
+			return obj.Items, nil
 		},
 		nil,
-		ec.marshalOBundleItem2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItem,
+		ec.marshalOBundleItem2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItem,
 		true,
 		false,
 	)
 }
 
-func (ec *executionContext) fieldContext_BundleProduct_bundle_items(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_BundleProduct_items(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "BundleProduct",
 		Field:      field,
@@ -8252,7 +8290,7 @@ func (ec *executionContext) _CategoryProducts_items(ctx context.Context, field g
 			return obj.Items, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -8281,7 +8319,7 @@ func (ec *executionContext) _CategoryProducts_page_info(ctx context.Context, fie
 			return obj.PageInfo, nil
 		},
 		nil,
-		ec.marshalOSearchResultPageInfo2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchResultPageInfo,
+		ec.marshalOSearchResultPageInfo2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchResultPageInfo,
 		true,
 		false,
 	)
@@ -8782,7 +8820,7 @@ func (ec *executionContext) _CategoryTree_products(ctx context.Context, field gr
 			return obj.Products, nil
 		},
 		nil,
-		ec.marshalOCategoryProducts2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryProducts,
+		ec.marshalOCategoryProducts2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryProducts,
 		true,
 		false,
 	)
@@ -8830,7 +8868,7 @@ func (ec *executionContext) _CategoryTree_breadcrumbs(ctx context.Context, field
 			return obj.Breadcrumbs, nil
 		},
 		nil,
-		ec.marshalOBreadcrumb2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBreadcrumb,
+		ec.marshalOBreadcrumb2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBreadcrumb,
 		true,
 		false,
 	)
@@ -8960,7 +8998,7 @@ func (ec *executionContext) _CategoryTree_type(ctx context.Context, field graphq
 			return obj.Type, nil
 		},
 		nil,
-		ec.marshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum,
+		ec.marshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum,
 		true,
 		false,
 	)
@@ -8989,7 +9027,7 @@ func (ec *executionContext) _CategoryTree_children(ctx context.Context, field gr
 			return obj.Children, nil
 		},
 		nil,
-		ec.marshalOCategoryTree2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryTree,
+		ec.marshalOCategoryTree2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryTree,
 		true,
 		false,
 	)
@@ -9470,7 +9508,7 @@ func (ec *executionContext) _ConfigurableProduct_description(ctx context.Context
 			return obj.Description, nil
 		},
 		nil,
-		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
+		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
 		true,
 		false,
 	)
@@ -9503,7 +9541,7 @@ func (ec *executionContext) _ConfigurableProduct_short_description(ctx context.C
 			return obj.ShortDescription, nil
 		},
 		nil,
-		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
+		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
 		true,
 		false,
 	)
@@ -9942,7 +9980,7 @@ func (ec *executionContext) _ConfigurableProduct_gift_message_available(ctx cont
 			return obj.GiftMessageAvailable, nil
 		},
 		nil,
-		ec.marshalOString2ᚖstring,
+		ec.marshalOBoolean2ᚖbool,
 		true,
 		false,
 	)
@@ -9955,7 +9993,7 @@ func (ec *executionContext) fieldContext_ConfigurableProduct_gift_message_availa
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -10000,7 +10038,7 @@ func (ec *executionContext) _ConfigurableProduct_image(ctx context.Context, fiel
 			return obj.Image, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -10041,7 +10079,7 @@ func (ec *executionContext) _ConfigurableProduct_small_image(ctx context.Context
 			return obj.SmallImage, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -10082,7 +10120,7 @@ func (ec *executionContext) _ConfigurableProduct_thumbnail(ctx context.Context, 
 			return obj.Thumbnail, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -10152,7 +10190,7 @@ func (ec *executionContext) _ConfigurableProduct_media_gallery(ctx context.Conte
 			return obj.MediaGallery, nil
 		},
 		nil,
-		ec.marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface,
+		ec.marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface,
 		true,
 		false,
 	)
@@ -10181,7 +10219,7 @@ func (ec *executionContext) _ConfigurableProduct_media_gallery_entries(ctx conte
 			return obj.MediaGalleryEntries, nil
 		},
 		nil,
-		ec.marshalOMediaGalleryEntry2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry,
+		ec.marshalOMediaGalleryEntry2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry,
 		true,
 		false,
 	)
@@ -10232,7 +10270,7 @@ func (ec *executionContext) _ConfigurableProduct_price_range(ctx context.Context
 			return obj.PriceRange, nil
 		},
 		nil,
-		ec.marshalNPriceRange2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceRange,
+		ec.marshalNPriceRange2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceRange,
 		true,
 		true,
 	)
@@ -10267,7 +10305,7 @@ func (ec *executionContext) _ConfigurableProduct_price(ctx context.Context, fiel
 			return obj.Price, nil
 		},
 		nil,
-		ec.marshalOProductPrices2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrices,
+		ec.marshalOProductPrices2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrices,
 		true,
 		false,
 	)
@@ -10304,7 +10342,7 @@ func (ec *executionContext) _ConfigurableProduct_price_tiers(ctx context.Context
 			return obj.PriceTiers, nil
 		},
 		nil,
-		ec.marshalOTierPrice2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice,
+		ec.marshalOTierPrice2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice,
 		true,
 		false,
 	)
@@ -10341,7 +10379,7 @@ func (ec *executionContext) _ConfigurableProduct_tier_prices(ctx context.Context
 			return obj.TierPrices, nil
 		},
 		nil,
-		ec.marshalOProductTierPrices2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices,
+		ec.marshalOProductTierPrices2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices,
 		true,
 		false,
 	)
@@ -10382,7 +10420,7 @@ func (ec *executionContext) _ConfigurableProduct_categories(ctx context.Context,
 			return obj.Categories, nil
 		},
 		nil,
-		ec.marshalOCategoryInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface,
+		ec.marshalOCategoryInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface,
 		true,
 		false,
 	)
@@ -10411,7 +10449,7 @@ func (ec *executionContext) _ConfigurableProduct_stock_status(ctx context.Contex
 			return obj.StockStatus, nil
 		},
 		nil,
-		ec.marshalOProductStockStatus2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductStockStatus,
+		ec.marshalOProductStockStatus2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductStockStatus,
 		true,
 		false,
 	)
@@ -10643,7 +10681,7 @@ func (ec *executionContext) _ConfigurableProduct_url_rewrites(ctx context.Contex
 			return obj.URLRewrites, nil
 		},
 		nil,
-		ec.marshalOUrlRewrite2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite,
+		ec.marshalOUrlRewrite2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite,
 		true,
 		false,
 	)
@@ -10678,7 +10716,7 @@ func (ec *executionContext) _ConfigurableProduct_related_products(ctx context.Co
 			return obj.RelatedProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -10707,7 +10745,7 @@ func (ec *executionContext) _ConfigurableProduct_upsell_products(ctx context.Con
 			return obj.UpsellProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -10736,7 +10774,7 @@ func (ec *executionContext) _ConfigurableProduct_crosssell_products(ctx context.
 			return obj.CrosssellProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -10765,7 +10803,7 @@ func (ec *executionContext) _ConfigurableProduct_product_links(ctx context.Conte
 			return obj.ProductLinks, nil
 		},
 		nil,
-		ec.marshalOProductLink2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink,
+		ec.marshalOProductLink2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink,
 		true,
 		false,
 	)
@@ -10864,7 +10902,7 @@ func (ec *executionContext) _ConfigurableProduct_reviews(ctx context.Context, fi
 			return obj.Reviews, nil
 		},
 		nil,
-		ec.marshalNProductReviews2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviews,
+		ec.marshalNProductReviews2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviews,
 		true,
 		true,
 	)
@@ -10910,7 +10948,7 @@ func (ec *executionContext) _ConfigurableProduct_custom_attributesV2(ctx context
 			return obj.CustomAttributesV2, nil
 		},
 		nil,
-		ec.marshalOProductCustomAttributes2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductCustomAttributes,
+		ec.marshalOProductCustomAttributes2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductCustomAttributes,
 		true,
 		false,
 	)
@@ -10956,7 +10994,7 @@ func (ec *executionContext) _ConfigurableProduct_websites(ctx context.Context, f
 			return obj.Websites, nil
 		},
 		nil,
-		ec.marshalOWebsite2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite,
+		ec.marshalOWebsite2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite,
 		true,
 		false,
 	)
@@ -11026,7 +11064,7 @@ func (ec *executionContext) _ConfigurableProduct_options(ctx context.Context, fi
 			return obj.Options, nil
 		},
 		nil,
-		ec.marshalOCustomizableOptionInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface,
+		ec.marshalOCustomizableOptionInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface,
 		true,
 		false,
 	)
@@ -11113,7 +11151,7 @@ func (ec *executionContext) _ConfigurableProduct_type(ctx context.Context, field
 			return obj.Type, nil
 		},
 		nil,
-		ec.marshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum,
+		ec.marshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum,
 		true,
 		false,
 	)
@@ -11142,7 +11180,7 @@ func (ec *executionContext) _ConfigurableProduct_variants(ctx context.Context, f
 			return obj.Variants, nil
 		},
 		nil,
-		ec.marshalOConfigurableVariant2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableVariant,
+		ec.marshalOConfigurableVariant2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableVariant,
 		true,
 		false,
 	)
@@ -11177,7 +11215,7 @@ func (ec *executionContext) _ConfigurableProduct_configurable_options(ctx contex
 			return obj.ConfigurableOptions, nil
 		},
 		nil,
-		ec.marshalOConfigurableProductOptions2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptions,
+		ec.marshalOConfigurableProductOptions2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptions,
 		true,
 		false,
 	)
@@ -11230,7 +11268,7 @@ func (ec *executionContext) _ConfigurableProduct_configurable_product_options_se
 			return obj.ConfigurableProductOptionsSelection, nil
 		},
 		nil,
-		ec.marshalOConfigurableProductOptionsSelection2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionsSelection,
+		ec.marshalOConfigurableProductOptionsSelection2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionsSelection,
 		true,
 		false,
 	)
@@ -11367,7 +11405,7 @@ func (ec *executionContext) _ConfigurableProductOption_values(ctx context.Contex
 			return obj.Values, nil
 		},
 		nil,
-		ec.marshalOConfigurableProductOptionValue2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionValueᚄ,
+		ec.marshalOConfigurableProductOptionValue2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionValueᚄ,
 		true,
 		false,
 	)
@@ -11524,7 +11562,7 @@ func (ec *executionContext) _ConfigurableProductOptionValue_swatch(ctx context.C
 			return obj.Swatch, nil
 		},
 		nil,
-		ec.marshalOSwatchDataInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSwatchDataInterface,
+		ec.marshalOSwatchDataInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSwatchDataInterface,
 		true,
 		false,
 	)
@@ -11814,7 +11852,7 @@ func (ec *executionContext) _ConfigurableProductOptions_values(ctx context.Conte
 			return obj.Values, nil
 		},
 		nil,
-		ec.marshalOConfigurableProductOptionsValues2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionsValues,
+		ec.marshalOConfigurableProductOptionsValues2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionsValues,
 		true,
 		false,
 	)
@@ -11888,7 +11926,7 @@ func (ec *executionContext) _ConfigurableProductOptionsSelection_options_availab
 			return obj.OptionsAvailableForSelection, nil
 		},
 		nil,
-		ec.marshalOConfigurableOptionAvailableForSelection2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableOptionAvailableForSelectionᚄ,
+		ec.marshalOConfigurableOptionAvailableForSelection2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableOptionAvailableForSelectionᚄ,
 		true,
 		false,
 	)
@@ -11923,7 +11961,7 @@ func (ec *executionContext) _ConfigurableProductOptionsSelection_configurable_op
 			return obj.ConfigurableOptions, nil
 		},
 		nil,
-		ec.marshalOConfigurableProductOption2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionᚄ,
+		ec.marshalOConfigurableProductOption2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionᚄ,
 		true,
 		false,
 	)
@@ -11962,7 +12000,7 @@ func (ec *executionContext) _ConfigurableProductOptionsSelection_media_gallery(c
 			return obj.MediaGallery, nil
 		},
 		nil,
-		ec.marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterfaceᚄ,
+		ec.marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterfaceᚄ,
 		true,
 		false,
 	)
@@ -11991,7 +12029,7 @@ func (ec *executionContext) _ConfigurableProductOptionsSelection_variant(ctx con
 			return obj.Variant, nil
 		},
 		nil,
-		ec.marshalOSimpleProduct2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSimpleProduct,
+		ec.marshalOSimpleProduct2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSimpleProduct,
 		true,
 		false,
 	)
@@ -12312,7 +12350,7 @@ func (ec *executionContext) _ConfigurableProductOptionsValues_swatch_data(ctx co
 			return obj.SwatchData, nil
 		},
 		nil,
-		ec.marshalOSwatchDataInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSwatchDataInterface,
+		ec.marshalOSwatchDataInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSwatchDataInterface,
 		true,
 		false,
 	)
@@ -12341,7 +12379,7 @@ func (ec *executionContext) _ConfigurableVariant_attributes(ctx context.Context,
 			return obj.Attributes, nil
 		},
 		nil,
-		ec.marshalOConfigurableAttributeOption2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableAttributeOption,
+		ec.marshalOConfigurableAttributeOption2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableAttributeOption,
 		true,
 		false,
 	)
@@ -12380,7 +12418,7 @@ func (ec *executionContext) _ConfigurableVariant_product(ctx context.Context, fi
 			return obj.Product, nil
 		},
 		nil,
-		ec.marshalOSimpleProduct2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSimpleProduct,
+		ec.marshalOSimpleProduct2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSimpleProduct,
 		true,
 		false,
 	)
@@ -12643,7 +12681,7 @@ func (ec *executionContext) _CustomizableAreaOption_value(ctx context.Context, f
 			return obj.Value, nil
 		},
 		nil,
-		ec.marshalOCustomizableAreaValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableAreaValue,
+		ec.marshalOCustomizableAreaValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableAreaValue,
 		true,
 		false,
 	)
@@ -12742,7 +12780,7 @@ func (ec *executionContext) _CustomizableAreaValue_price_type(ctx context.Contex
 			return obj.PriceType, nil
 		},
 		nil,
-		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
+		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
 		true,
 		false,
 	)
@@ -12974,7 +13012,7 @@ func (ec *executionContext) _CustomizableCheckboxOption_value(ctx context.Contex
 			return obj.Value, nil
 		},
 		nil,
-		ec.marshalOCustomizableCheckboxValue2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableCheckboxValue,
+		ec.marshalOCustomizableCheckboxValue2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableCheckboxValue,
 		true,
 		false,
 	)
@@ -13077,7 +13115,7 @@ func (ec *executionContext) _CustomizableCheckboxValue_price_type(ctx context.Co
 			return obj.PriceType, nil
 		},
 		nil,
-		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
+		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
 		true,
 		false,
 	)
@@ -13338,7 +13376,7 @@ func (ec *executionContext) _CustomizableDateOption_value(ctx context.Context, f
 			return obj.Value, nil
 		},
 		nil,
-		ec.marshalOCustomizableDateValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDateValue,
+		ec.marshalOCustomizableDateValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDateValue,
 		true,
 		false,
 	)
@@ -13437,7 +13475,7 @@ func (ec *executionContext) _CustomizableDateValue_price_type(ctx context.Contex
 			return obj.PriceType, nil
 		},
 		nil,
-		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
+		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
 		true,
 		false,
 	)
@@ -13466,7 +13504,7 @@ func (ec *executionContext) _CustomizableDateValue_type(ctx context.Context, fie
 			return obj.Type, nil
 		},
 		nil,
-		ec.marshalOCustomizableDateTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDateTypeEnum,
+		ec.marshalOCustomizableDateTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDateTypeEnum,
 		true,
 		false,
 	)
@@ -13669,7 +13707,7 @@ func (ec *executionContext) _CustomizableDropDownOption_value(ctx context.Contex
 			return obj.Value, nil
 		},
 		nil,
-		ec.marshalOCustomizableDropDownValue2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDropDownValue,
+		ec.marshalOCustomizableDropDownValue2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDropDownValue,
 		true,
 		false,
 	)
@@ -13772,7 +13810,7 @@ func (ec *executionContext) _CustomizableDropDownValue_price_type(ctx context.Co
 			return obj.PriceType, nil
 		},
 		nil,
-		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
+		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
 		true,
 		false,
 	)
@@ -14033,7 +14071,7 @@ func (ec *executionContext) _CustomizableFieldOption_value(ctx context.Context, 
 			return obj.Value, nil
 		},
 		nil,
-		ec.marshalOCustomizableFieldValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableFieldValue,
+		ec.marshalOCustomizableFieldValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableFieldValue,
 		true,
 		false,
 	)
@@ -14132,7 +14170,7 @@ func (ec *executionContext) _CustomizableFieldValue_price_type(ctx context.Conte
 			return obj.PriceType, nil
 		},
 		nil,
-		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
+		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
 		true,
 		false,
 	)
@@ -14364,7 +14402,7 @@ func (ec *executionContext) _CustomizableFileOption_value(ctx context.Context, f
 			return obj.Value, nil
 		},
 		nil,
-		ec.marshalOCustomizableFileValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableFileValue,
+		ec.marshalOCustomizableFileValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableFileValue,
 		true,
 		false,
 	)
@@ -14467,7 +14505,7 @@ func (ec *executionContext) _CustomizableFileValue_price_type(ctx context.Contex
 			return obj.PriceType, nil
 		},
 		nil,
-		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
+		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
 		true,
 		false,
 	)
@@ -14757,7 +14795,7 @@ func (ec *executionContext) _CustomizableMultipleOption_value(ctx context.Contex
 			return obj.Value, nil
 		},
 		nil,
-		ec.marshalOCustomizableMultipleValue2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableMultipleValue,
+		ec.marshalOCustomizableMultipleValue2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableMultipleValue,
 		true,
 		false,
 	)
@@ -14860,7 +14898,7 @@ func (ec *executionContext) _CustomizableMultipleValue_price_type(ctx context.Co
 			return obj.PriceType, nil
 		},
 		nil,
-		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
+		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
 		true,
 		false,
 	)
@@ -15121,7 +15159,7 @@ func (ec *executionContext) _CustomizableRadioOption_value(ctx context.Context, 
 			return obj.Value, nil
 		},
 		nil,
-		ec.marshalOCustomizableRadioValue2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableRadioValue,
+		ec.marshalOCustomizableRadioValue2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableRadioValue,
 		true,
 		false,
 	)
@@ -15224,7 +15262,7 @@ func (ec *executionContext) _CustomizableRadioValue_price_type(ctx context.Conte
 			return obj.PriceType, nil
 		},
 		nil,
-		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
+		ec.marshalOPriceTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum,
 		true,
 		false,
 	)
@@ -15369,7 +15407,7 @@ func (ec *executionContext) _FixedProductTax_amount(ctx context.Context, field g
 			return obj.Amount, nil
 		},
 		nil,
-		ec.marshalOMoney2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney,
+		ec.marshalOMoney2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney,
 		true,
 		false,
 	)
@@ -15607,7 +15645,7 @@ func (ec *executionContext) _GroupedProduct_description(ctx context.Context, fie
 			return obj.Description, nil
 		},
 		nil,
-		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
+		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
 		true,
 		false,
 	)
@@ -15640,7 +15678,7 @@ func (ec *executionContext) _GroupedProduct_short_description(ctx context.Contex
 			return obj.ShortDescription, nil
 		},
 		nil,
-		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
+		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
 		true,
 		false,
 	)
@@ -16079,7 +16117,7 @@ func (ec *executionContext) _GroupedProduct_gift_message_available(ctx context.C
 			return obj.GiftMessageAvailable, nil
 		},
 		nil,
-		ec.marshalOString2ᚖstring,
+		ec.marshalOBoolean2ᚖbool,
 		true,
 		false,
 	)
@@ -16092,7 +16130,7 @@ func (ec *executionContext) fieldContext_GroupedProduct_gift_message_available(_
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -16137,7 +16175,7 @@ func (ec *executionContext) _GroupedProduct_image(ctx context.Context, field gra
 			return obj.Image, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -16178,7 +16216,7 @@ func (ec *executionContext) _GroupedProduct_small_image(ctx context.Context, fie
 			return obj.SmallImage, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -16219,7 +16257,7 @@ func (ec *executionContext) _GroupedProduct_thumbnail(ctx context.Context, field
 			return obj.Thumbnail, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -16289,7 +16327,7 @@ func (ec *executionContext) _GroupedProduct_media_gallery(ctx context.Context, f
 			return obj.MediaGallery, nil
 		},
 		nil,
-		ec.marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface,
+		ec.marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface,
 		true,
 		false,
 	)
@@ -16318,7 +16356,7 @@ func (ec *executionContext) _GroupedProduct_media_gallery_entries(ctx context.Co
 			return obj.MediaGalleryEntries, nil
 		},
 		nil,
-		ec.marshalOMediaGalleryEntry2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry,
+		ec.marshalOMediaGalleryEntry2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry,
 		true,
 		false,
 	)
@@ -16369,7 +16407,7 @@ func (ec *executionContext) _GroupedProduct_price_range(ctx context.Context, fie
 			return obj.PriceRange, nil
 		},
 		nil,
-		ec.marshalNPriceRange2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceRange,
+		ec.marshalNPriceRange2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceRange,
 		true,
 		true,
 	)
@@ -16404,7 +16442,7 @@ func (ec *executionContext) _GroupedProduct_price(ctx context.Context, field gra
 			return obj.Price, nil
 		},
 		nil,
-		ec.marshalOProductPrices2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrices,
+		ec.marshalOProductPrices2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrices,
 		true,
 		false,
 	)
@@ -16441,7 +16479,7 @@ func (ec *executionContext) _GroupedProduct_price_tiers(ctx context.Context, fie
 			return obj.PriceTiers, nil
 		},
 		nil,
-		ec.marshalOTierPrice2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice,
+		ec.marshalOTierPrice2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice,
 		true,
 		false,
 	)
@@ -16478,7 +16516,7 @@ func (ec *executionContext) _GroupedProduct_tier_prices(ctx context.Context, fie
 			return obj.TierPrices, nil
 		},
 		nil,
-		ec.marshalOProductTierPrices2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices,
+		ec.marshalOProductTierPrices2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices,
 		true,
 		false,
 	)
@@ -16519,7 +16557,7 @@ func (ec *executionContext) _GroupedProduct_categories(ctx context.Context, fiel
 			return obj.Categories, nil
 		},
 		nil,
-		ec.marshalOCategoryInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface,
+		ec.marshalOCategoryInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface,
 		true,
 		false,
 	)
@@ -16548,7 +16586,7 @@ func (ec *executionContext) _GroupedProduct_stock_status(ctx context.Context, fi
 			return obj.StockStatus, nil
 		},
 		nil,
-		ec.marshalOProductStockStatus2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductStockStatus,
+		ec.marshalOProductStockStatus2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductStockStatus,
 		true,
 		false,
 	)
@@ -16780,7 +16818,7 @@ func (ec *executionContext) _GroupedProduct_url_rewrites(ctx context.Context, fi
 			return obj.URLRewrites, nil
 		},
 		nil,
-		ec.marshalOUrlRewrite2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite,
+		ec.marshalOUrlRewrite2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite,
 		true,
 		false,
 	)
@@ -16815,7 +16853,7 @@ func (ec *executionContext) _GroupedProduct_related_products(ctx context.Context
 			return obj.RelatedProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -16844,7 +16882,7 @@ func (ec *executionContext) _GroupedProduct_upsell_products(ctx context.Context,
 			return obj.UpsellProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -16873,7 +16911,7 @@ func (ec *executionContext) _GroupedProduct_crosssell_products(ctx context.Conte
 			return obj.CrosssellProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -16902,7 +16940,7 @@ func (ec *executionContext) _GroupedProduct_product_links(ctx context.Context, f
 			return obj.ProductLinks, nil
 		},
 		nil,
-		ec.marshalOProductLink2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink,
+		ec.marshalOProductLink2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink,
 		true,
 		false,
 	)
@@ -17001,7 +17039,7 @@ func (ec *executionContext) _GroupedProduct_reviews(ctx context.Context, field g
 			return obj.Reviews, nil
 		},
 		nil,
-		ec.marshalNProductReviews2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviews,
+		ec.marshalNProductReviews2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviews,
 		true,
 		true,
 	)
@@ -17047,7 +17085,7 @@ func (ec *executionContext) _GroupedProduct_custom_attributesV2(ctx context.Cont
 			return obj.CustomAttributesV2, nil
 		},
 		nil,
-		ec.marshalOProductCustomAttributes2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductCustomAttributes,
+		ec.marshalOProductCustomAttributes2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductCustomAttributes,
 		true,
 		false,
 	)
@@ -17093,7 +17131,7 @@ func (ec *executionContext) _GroupedProduct_websites(ctx context.Context, field 
 			return obj.Websites, nil
 		},
 		nil,
-		ec.marshalOWebsite2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite,
+		ec.marshalOWebsite2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite,
 		true,
 		false,
 	)
@@ -17163,7 +17201,7 @@ func (ec *executionContext) _GroupedProduct_options(ctx context.Context, field g
 			return obj.Options, nil
 		},
 		nil,
-		ec.marshalOCustomizableOptionInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface,
+		ec.marshalOCustomizableOptionInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface,
 		true,
 		false,
 	)
@@ -17250,7 +17288,7 @@ func (ec *executionContext) _GroupedProduct_type(ctx context.Context, field grap
 			return obj.Type, nil
 		},
 		nil,
-		ec.marshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum,
+		ec.marshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum,
 		true,
 		false,
 	)
@@ -17279,7 +17317,7 @@ func (ec *executionContext) _GroupedProduct_items(ctx context.Context, field gra
 			return obj.Items, nil
 		},
 		nil,
-		ec.marshalOGroupedProductItem2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐGroupedProductItem,
+		ec.marshalOGroupedProductItem2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐGroupedProductItem,
 		true,
 		false,
 	)
@@ -17374,7 +17412,7 @@ func (ec *executionContext) _GroupedProductItem_product(ctx context.Context, fie
 			return obj.Product, nil
 		},
 		nil,
-		ec.marshalOProductInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -17751,7 +17789,7 @@ func (ec *executionContext) _MediaGalleryEntry_content(ctx context.Context, fiel
 			return obj.Content, nil
 		},
 		nil,
-		ec.marshalOProductMediaGalleryEntriesContent2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductMediaGalleryEntriesContent,
+		ec.marshalOProductMediaGalleryEntriesContent2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductMediaGalleryEntriesContent,
 		true,
 		false,
 	)
@@ -17788,7 +17826,7 @@ func (ec *executionContext) _MediaGalleryEntry_video_content(ctx context.Context
 			return obj.VideoContent, nil
 		},
 		nil,
-		ec.marshalOProductMediaGalleryEntriesVideoContent2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductMediaGalleryEntriesVideoContent,
+		ec.marshalOProductMediaGalleryEntriesVideoContent2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductMediaGalleryEntriesVideoContent,
 		true,
 		false,
 	)
@@ -17860,7 +17898,7 @@ func (ec *executionContext) _Money_currency(ctx context.Context, field graphql.C
 			return obj.Currency, nil
 		},
 		nil,
-		ec.marshalOCurrencyEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCurrencyEnum,
+		ec.marshalOCurrencyEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCurrencyEnum,
 		true,
 		false,
 	)
@@ -17889,7 +17927,7 @@ func (ec *executionContext) _Price_amount(ctx context.Context, field graphql.Col
 			return obj.Amount, nil
 		},
 		nil,
-		ec.marshalOMoney2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney,
+		ec.marshalOMoney2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney,
 		true,
 		false,
 	)
@@ -17924,7 +17962,7 @@ func (ec *executionContext) _Price_adjustments(ctx context.Context, field graphq
 			return obj.Adjustments, nil
 		},
 		nil,
-		ec.marshalOPriceAdjustment2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustment,
+		ec.marshalOPriceAdjustment2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustment,
 		true,
 		false,
 	)
@@ -17961,7 +17999,7 @@ func (ec *executionContext) _PriceAdjustment_amount(ctx context.Context, field g
 			return obj.Amount, nil
 		},
 		nil,
-		ec.marshalOMoney2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney,
+		ec.marshalOMoney2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney,
 		true,
 		false,
 	)
@@ -17996,7 +18034,7 @@ func (ec *executionContext) _PriceAdjustment_code(ctx context.Context, field gra
 			return obj.Code, nil
 		},
 		nil,
-		ec.marshalOPriceAdjustmentCodesEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustmentCodesEnum,
+		ec.marshalOPriceAdjustmentCodesEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustmentCodesEnum,
 		true,
 		false,
 	)
@@ -18025,7 +18063,7 @@ func (ec *executionContext) _PriceAdjustment_description(ctx context.Context, fi
 			return obj.Description, nil
 		},
 		nil,
-		ec.marshalOPriceAdjustmentDescriptionEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustmentDescriptionEnum,
+		ec.marshalOPriceAdjustmentDescriptionEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustmentDescriptionEnum,
 		true,
 		false,
 	)
@@ -18054,7 +18092,7 @@ func (ec *executionContext) _PriceRange_minimum_price(ctx context.Context, field
 			return obj.MinimumPrice, nil
 		},
 		nil,
-		ec.marshalNProductPrice2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrice,
+		ec.marshalNProductPrice2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrice,
 		true,
 		true,
 	)
@@ -18093,7 +18131,7 @@ func (ec *executionContext) _PriceRange_maximum_price(ctx context.Context, field
 			return obj.MaximumPrice, nil
 		},
 		nil,
-		ec.marshalOProductPrice2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrice,
+		ec.marshalOProductPrice2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrice,
 		true,
 		false,
 	)
@@ -18132,7 +18170,7 @@ func (ec *executionContext) _ProductCustomAttributes_items(ctx context.Context, 
 			return obj.Items, nil
 		},
 		nil,
-		ec.marshalNAttributeValueInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeValueInterfaceᚄ,
+		ec.marshalNAttributeValueInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeValueInterfaceᚄ,
 		true,
 		true,
 	)
@@ -18161,7 +18199,7 @@ func (ec *executionContext) _ProductCustomAttributes_errors(ctx context.Context,
 			return obj.Errors, nil
 		},
 		nil,
-		ec.marshalNAttributeMetadataError2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeMetadataErrorᚄ,
+		ec.marshalNAttributeMetadataError2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeMetadataErrorᚄ,
 		true,
 		true,
 	)
@@ -18805,7 +18843,7 @@ func (ec *executionContext) _ProductPrice_regular_price(ctx context.Context, fie
 			return obj.RegularPrice, nil
 		},
 		nil,
-		ec.marshalNMoney2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney,
+		ec.marshalNMoney2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney,
 		true,
 		true,
 	)
@@ -18840,7 +18878,7 @@ func (ec *executionContext) _ProductPrice_final_price(ctx context.Context, field
 			return obj.FinalPrice, nil
 		},
 		nil,
-		ec.marshalNMoney2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney,
+		ec.marshalNMoney2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney,
 		true,
 		true,
 	)
@@ -18875,7 +18913,7 @@ func (ec *executionContext) _ProductPrice_discount(ctx context.Context, field gr
 			return obj.Discount, nil
 		},
 		nil,
-		ec.marshalOProductDiscount2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductDiscount,
+		ec.marshalOProductDiscount2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductDiscount,
 		true,
 		false,
 	)
@@ -18910,7 +18948,7 @@ func (ec *executionContext) _ProductPrice_fixed_product_taxes(ctx context.Contex
 			return obj.FixedProductTaxes, nil
 		},
 		nil,
-		ec.marshalOFixedProductTax2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFixedProductTax,
+		ec.marshalOFixedProductTax2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFixedProductTax,
 		true,
 		false,
 	)
@@ -18945,7 +18983,7 @@ func (ec *executionContext) _ProductPrices_minimalPrice(ctx context.Context, fie
 			return obj.MinimalPrice, nil
 		},
 		nil,
-		ec.marshalOPrice2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPrice,
+		ec.marshalOPrice2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPrice,
 		true,
 		false,
 	)
@@ -18980,7 +19018,7 @@ func (ec *executionContext) _ProductPrices_maximalPrice(ctx context.Context, fie
 			return obj.MaximalPrice, nil
 		},
 		nil,
-		ec.marshalOPrice2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPrice,
+		ec.marshalOPrice2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPrice,
 		true,
 		false,
 	)
@@ -19015,7 +19053,7 @@ func (ec *executionContext) _ProductPrices_regularPrice(ctx context.Context, fie
 			return obj.RegularPrice, nil
 		},
 		nil,
-		ec.marshalOPrice2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPrice,
+		ec.marshalOPrice2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPrice,
 		true,
 		false,
 	)
@@ -19195,7 +19233,7 @@ func (ec *executionContext) _ProductReview_ratings_breakdown(ctx context.Context
 			return obj.RatingsBreakdown, nil
 		},
 		nil,
-		ec.marshalNProductReviewRating2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviewRatingᚄ,
+		ec.marshalNProductReviewRating2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviewRatingᚄ,
 		true,
 		true,
 	)
@@ -19288,7 +19326,7 @@ func (ec *executionContext) _ProductReviews_items(ctx context.Context, field gra
 			return obj.Items, nil
 		},
 		nil,
-		ec.marshalNProductReview2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReview,
+		ec.marshalNProductReview2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReview,
 		true,
 		true,
 	)
@@ -19331,7 +19369,7 @@ func (ec *executionContext) _ProductReviews_page_info(ctx context.Context, field
 			return obj.PageInfo, nil
 		},
 		nil,
-		ec.marshalNSearchResultPageInfo2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchResultPageInfo,
+		ec.marshalNSearchResultPageInfo2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchResultPageInfo,
 		true,
 		true,
 	)
@@ -19629,7 +19667,7 @@ func (ec *executionContext) _ProductVideo_video_content(ctx context.Context, fie
 			return obj.VideoContent, nil
 		},
 		nil,
-		ec.marshalOProductMediaGalleryEntriesVideoContent2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductMediaGalleryEntriesVideoContent,
+		ec.marshalOProductMediaGalleryEntriesVideoContent2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductMediaGalleryEntriesVideoContent,
 		true,
 		false,
 	)
@@ -19672,7 +19710,7 @@ func (ec *executionContext) _Products_items(ctx context.Context, field graphql.C
 			return obj.Items, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -19701,7 +19739,7 @@ func (ec *executionContext) _Products_page_info(ctx context.Context, field graph
 			return obj.PageInfo, nil
 		},
 		nil,
-		ec.marshalOSearchResultPageInfo2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchResultPageInfo,
+		ec.marshalOSearchResultPageInfo2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchResultPageInfo,
 		true,
 		false,
 	)
@@ -19767,7 +19805,7 @@ func (ec *executionContext) _Products_aggregations(ctx context.Context, field gr
 			return obj.Aggregations, nil
 		},
 		nil,
-		ec.marshalOAggregation2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregation,
+		ec.marshalOAggregation2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregation,
 		true,
 		false,
 	)
@@ -19819,7 +19857,7 @@ func (ec *executionContext) _Products_sort_fields(ctx context.Context, field gra
 			return obj.SortFields, nil
 		},
 		nil,
-		ec.marshalOSortFields2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortFields,
+		ec.marshalOSortFields2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortFields,
 		true,
 		false,
 	)
@@ -19854,7 +19892,7 @@ func (ec *executionContext) _Products_suggestions(ctx context.Context, field gra
 			return obj.Suggestions, nil
 		},
 		nil,
-		ec.marshalOSearchSuggestion2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchSuggestion,
+		ec.marshalOSearchSuggestion2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchSuggestion,
 		true,
 		false,
 	)
@@ -19888,7 +19926,7 @@ func (ec *executionContext) _Query_products(ctx context.Context, field graphql.C
 			return ec.Resolvers.Query().Products(ctx, fc.Args["search"].(*string), fc.Args["filter"].(*model.ProductAttributeFilterInput), fc.Args["pageSize"].(*int), fc.Args["currentPage"].(*int), fc.Args["sort"].(*model.ProductAttributeSortInput))
 		},
 		nil,
-		ec.marshalOProducts2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProducts,
+		ec.marshalOProducts2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProducts,
 		true,
 		false,
 	)
@@ -20340,7 +20378,7 @@ func (ec *executionContext) _SimpleProduct_description(ctx context.Context, fiel
 			return obj.Description, nil
 		},
 		nil,
-		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
+		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
 		true,
 		false,
 	)
@@ -20373,7 +20411,7 @@ func (ec *executionContext) _SimpleProduct_short_description(ctx context.Context
 			return obj.ShortDescription, nil
 		},
 		nil,
-		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
+		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
 		true,
 		false,
 	)
@@ -20812,7 +20850,7 @@ func (ec *executionContext) _SimpleProduct_gift_message_available(ctx context.Co
 			return obj.GiftMessageAvailable, nil
 		},
 		nil,
-		ec.marshalOString2ᚖstring,
+		ec.marshalOBoolean2ᚖbool,
 		true,
 		false,
 	)
@@ -20825,7 +20863,7 @@ func (ec *executionContext) fieldContext_SimpleProduct_gift_message_available(_ 
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -20870,7 +20908,7 @@ func (ec *executionContext) _SimpleProduct_image(ctx context.Context, field grap
 			return obj.Image, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -20911,7 +20949,7 @@ func (ec *executionContext) _SimpleProduct_small_image(ctx context.Context, fiel
 			return obj.SmallImage, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -20952,7 +20990,7 @@ func (ec *executionContext) _SimpleProduct_thumbnail(ctx context.Context, field 
 			return obj.Thumbnail, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -21022,7 +21060,7 @@ func (ec *executionContext) _SimpleProduct_media_gallery(ctx context.Context, fi
 			return obj.MediaGallery, nil
 		},
 		nil,
-		ec.marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface,
+		ec.marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface,
 		true,
 		false,
 	)
@@ -21051,7 +21089,7 @@ func (ec *executionContext) _SimpleProduct_media_gallery_entries(ctx context.Con
 			return obj.MediaGalleryEntries, nil
 		},
 		nil,
-		ec.marshalOMediaGalleryEntry2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry,
+		ec.marshalOMediaGalleryEntry2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry,
 		true,
 		false,
 	)
@@ -21102,7 +21140,7 @@ func (ec *executionContext) _SimpleProduct_price_range(ctx context.Context, fiel
 			return obj.PriceRange, nil
 		},
 		nil,
-		ec.marshalNPriceRange2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceRange,
+		ec.marshalNPriceRange2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceRange,
 		true,
 		true,
 	)
@@ -21137,7 +21175,7 @@ func (ec *executionContext) _SimpleProduct_price(ctx context.Context, field grap
 			return obj.Price, nil
 		},
 		nil,
-		ec.marshalOProductPrices2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrices,
+		ec.marshalOProductPrices2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrices,
 		true,
 		false,
 	)
@@ -21174,7 +21212,7 @@ func (ec *executionContext) _SimpleProduct_price_tiers(ctx context.Context, fiel
 			return obj.PriceTiers, nil
 		},
 		nil,
-		ec.marshalOTierPrice2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice,
+		ec.marshalOTierPrice2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice,
 		true,
 		false,
 	)
@@ -21211,7 +21249,7 @@ func (ec *executionContext) _SimpleProduct_tier_prices(ctx context.Context, fiel
 			return obj.TierPrices, nil
 		},
 		nil,
-		ec.marshalOProductTierPrices2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices,
+		ec.marshalOProductTierPrices2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices,
 		true,
 		false,
 	)
@@ -21252,7 +21290,7 @@ func (ec *executionContext) _SimpleProduct_categories(ctx context.Context, field
 			return obj.Categories, nil
 		},
 		nil,
-		ec.marshalOCategoryInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface,
+		ec.marshalOCategoryInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface,
 		true,
 		false,
 	)
@@ -21281,7 +21319,7 @@ func (ec *executionContext) _SimpleProduct_stock_status(ctx context.Context, fie
 			return obj.StockStatus, nil
 		},
 		nil,
-		ec.marshalOProductStockStatus2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductStockStatus,
+		ec.marshalOProductStockStatus2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductStockStatus,
 		true,
 		false,
 	)
@@ -21513,7 +21551,7 @@ func (ec *executionContext) _SimpleProduct_url_rewrites(ctx context.Context, fie
 			return obj.URLRewrites, nil
 		},
 		nil,
-		ec.marshalOUrlRewrite2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite,
+		ec.marshalOUrlRewrite2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite,
 		true,
 		false,
 	)
@@ -21548,7 +21586,7 @@ func (ec *executionContext) _SimpleProduct_related_products(ctx context.Context,
 			return obj.RelatedProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -21577,7 +21615,7 @@ func (ec *executionContext) _SimpleProduct_upsell_products(ctx context.Context, 
 			return obj.UpsellProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -21606,7 +21644,7 @@ func (ec *executionContext) _SimpleProduct_crosssell_products(ctx context.Contex
 			return obj.CrosssellProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -21635,7 +21673,7 @@ func (ec *executionContext) _SimpleProduct_product_links(ctx context.Context, fi
 			return obj.ProductLinks, nil
 		},
 		nil,
-		ec.marshalOProductLink2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink,
+		ec.marshalOProductLink2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink,
 		true,
 		false,
 	)
@@ -21734,7 +21772,7 @@ func (ec *executionContext) _SimpleProduct_reviews(ctx context.Context, field gr
 			return obj.Reviews, nil
 		},
 		nil,
-		ec.marshalNProductReviews2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviews,
+		ec.marshalNProductReviews2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviews,
 		true,
 		true,
 	)
@@ -21780,7 +21818,7 @@ func (ec *executionContext) _SimpleProduct_custom_attributesV2(ctx context.Conte
 			return obj.CustomAttributesV2, nil
 		},
 		nil,
-		ec.marshalOProductCustomAttributes2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductCustomAttributes,
+		ec.marshalOProductCustomAttributes2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductCustomAttributes,
 		true,
 		false,
 	)
@@ -21826,7 +21864,7 @@ func (ec *executionContext) _SimpleProduct_websites(ctx context.Context, field g
 			return obj.Websites, nil
 		},
 		nil,
-		ec.marshalOWebsite2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite,
+		ec.marshalOWebsite2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite,
 		true,
 		false,
 	)
@@ -21896,7 +21934,7 @@ func (ec *executionContext) _SimpleProduct_options(ctx context.Context, field gr
 			return obj.Options, nil
 		},
 		nil,
-		ec.marshalOCustomizableOptionInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface,
+		ec.marshalOCustomizableOptionInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface,
 		true,
 		false,
 	)
@@ -21983,7 +22021,7 @@ func (ec *executionContext) _SimpleProduct_type(ctx context.Context, field graph
 			return obj.Type, nil
 		},
 		nil,
-		ec.marshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum,
+		ec.marshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum,
 		true,
 		false,
 	)
@@ -22099,7 +22137,7 @@ func (ec *executionContext) _SortFields_options(ctx context.Context, field graph
 			return obj.Options, nil
 		},
 		nil,
-		ec.marshalOSortField2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortField,
+		ec.marshalOSortField2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortField,
 		true,
 		false,
 	)
@@ -22163,7 +22201,7 @@ func (ec *executionContext) _TierPrice_final_price(ctx context.Context, field gr
 			return obj.FinalPrice, nil
 		},
 		nil,
-		ec.marshalOMoney2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney,
+		ec.marshalOMoney2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney,
 		true,
 		false,
 	)
@@ -22227,7 +22265,7 @@ func (ec *executionContext) _TierPrice_discount(ctx context.Context, field graph
 			return obj.Discount, nil
 		},
 		nil,
-		ec.marshalOProductDiscount2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductDiscount,
+		ec.marshalOProductDiscount2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductDiscount,
 		true,
 		false,
 	)
@@ -22291,7 +22329,7 @@ func (ec *executionContext) _UrlRewrite_parameters(ctx context.Context, field gr
 			return obj.Parameters, nil
 		},
 		nil,
-		ec.marshalOHttpQueryParameter2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐHTTPQueryParameter,
+		ec.marshalOHttpQueryParameter2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐHTTPQueryParameter,
 		true,
 		false,
 	)
@@ -22500,7 +22538,7 @@ func (ec *executionContext) _VirtualProduct_description(ctx context.Context, fie
 			return obj.Description, nil
 		},
 		nil,
-		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
+		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
 		true,
 		false,
 	)
@@ -22533,7 +22571,7 @@ func (ec *executionContext) _VirtualProduct_short_description(ctx context.Contex
 			return obj.ShortDescription, nil
 		},
 		nil,
-		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
+		ec.marshalOComplexTextValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue,
 		true,
 		false,
 	)
@@ -22972,7 +23010,7 @@ func (ec *executionContext) _VirtualProduct_gift_message_available(ctx context.C
 			return obj.GiftMessageAvailable, nil
 		},
 		nil,
-		ec.marshalOString2ᚖstring,
+		ec.marshalOBoolean2ᚖbool,
 		true,
 		false,
 	)
@@ -22985,7 +23023,7 @@ func (ec *executionContext) fieldContext_VirtualProduct_gift_message_available(_
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -23030,7 +23068,7 @@ func (ec *executionContext) _VirtualProduct_image(ctx context.Context, field gra
 			return obj.Image, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -23071,7 +23109,7 @@ func (ec *executionContext) _VirtualProduct_small_image(ctx context.Context, fie
 			return obj.SmallImage, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -23112,7 +23150,7 @@ func (ec *executionContext) _VirtualProduct_thumbnail(ctx context.Context, field
 			return obj.Thumbnail, nil
 		},
 		nil,
-		ec.marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
+		ec.marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage,
 		true,
 		false,
 	)
@@ -23182,7 +23220,7 @@ func (ec *executionContext) _VirtualProduct_media_gallery(ctx context.Context, f
 			return obj.MediaGallery, nil
 		},
 		nil,
-		ec.marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface,
+		ec.marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface,
 		true,
 		false,
 	)
@@ -23211,7 +23249,7 @@ func (ec *executionContext) _VirtualProduct_media_gallery_entries(ctx context.Co
 			return obj.MediaGalleryEntries, nil
 		},
 		nil,
-		ec.marshalOMediaGalleryEntry2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry,
+		ec.marshalOMediaGalleryEntry2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry,
 		true,
 		false,
 	)
@@ -23262,7 +23300,7 @@ func (ec *executionContext) _VirtualProduct_price_range(ctx context.Context, fie
 			return obj.PriceRange, nil
 		},
 		nil,
-		ec.marshalNPriceRange2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceRange,
+		ec.marshalNPriceRange2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceRange,
 		true,
 		true,
 	)
@@ -23297,7 +23335,7 @@ func (ec *executionContext) _VirtualProduct_price(ctx context.Context, field gra
 			return obj.Price, nil
 		},
 		nil,
-		ec.marshalOProductPrices2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrices,
+		ec.marshalOProductPrices2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrices,
 		true,
 		false,
 	)
@@ -23334,7 +23372,7 @@ func (ec *executionContext) _VirtualProduct_price_tiers(ctx context.Context, fie
 			return obj.PriceTiers, nil
 		},
 		nil,
-		ec.marshalOTierPrice2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice,
+		ec.marshalOTierPrice2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice,
 		true,
 		false,
 	)
@@ -23371,7 +23409,7 @@ func (ec *executionContext) _VirtualProduct_tier_prices(ctx context.Context, fie
 			return obj.TierPrices, nil
 		},
 		nil,
-		ec.marshalOProductTierPrices2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices,
+		ec.marshalOProductTierPrices2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices,
 		true,
 		false,
 	)
@@ -23412,7 +23450,7 @@ func (ec *executionContext) _VirtualProduct_categories(ctx context.Context, fiel
 			return obj.Categories, nil
 		},
 		nil,
-		ec.marshalOCategoryInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface,
+		ec.marshalOCategoryInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface,
 		true,
 		false,
 	)
@@ -23441,7 +23479,7 @@ func (ec *executionContext) _VirtualProduct_stock_status(ctx context.Context, fi
 			return obj.StockStatus, nil
 		},
 		nil,
-		ec.marshalOProductStockStatus2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductStockStatus,
+		ec.marshalOProductStockStatus2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductStockStatus,
 		true,
 		false,
 	)
@@ -23673,7 +23711,7 @@ func (ec *executionContext) _VirtualProduct_url_rewrites(ctx context.Context, fi
 			return obj.URLRewrites, nil
 		},
 		nil,
-		ec.marshalOUrlRewrite2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite,
+		ec.marshalOUrlRewrite2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite,
 		true,
 		false,
 	)
@@ -23708,7 +23746,7 @@ func (ec *executionContext) _VirtualProduct_related_products(ctx context.Context
 			return obj.RelatedProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -23737,7 +23775,7 @@ func (ec *executionContext) _VirtualProduct_upsell_products(ctx context.Context,
 			return obj.UpsellProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -23766,7 +23804,7 @@ func (ec *executionContext) _VirtualProduct_crosssell_products(ctx context.Conte
 			return obj.CrosssellProducts, nil
 		},
 		nil,
-		ec.marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
+		ec.marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface,
 		true,
 		false,
 	)
@@ -23795,7 +23833,7 @@ func (ec *executionContext) _VirtualProduct_product_links(ctx context.Context, f
 			return obj.ProductLinks, nil
 		},
 		nil,
-		ec.marshalOProductLink2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink,
+		ec.marshalOProductLink2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink,
 		true,
 		false,
 	)
@@ -23894,7 +23932,7 @@ func (ec *executionContext) _VirtualProduct_reviews(ctx context.Context, field g
 			return obj.Reviews, nil
 		},
 		nil,
-		ec.marshalNProductReviews2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviews,
+		ec.marshalNProductReviews2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviews,
 		true,
 		true,
 	)
@@ -23940,7 +23978,7 @@ func (ec *executionContext) _VirtualProduct_custom_attributesV2(ctx context.Cont
 			return obj.CustomAttributesV2, nil
 		},
 		nil,
-		ec.marshalOProductCustomAttributes2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductCustomAttributes,
+		ec.marshalOProductCustomAttributes2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductCustomAttributes,
 		true,
 		false,
 	)
@@ -23986,7 +24024,7 @@ func (ec *executionContext) _VirtualProduct_websites(ctx context.Context, field 
 			return obj.Websites, nil
 		},
 		nil,
-		ec.marshalOWebsite2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite,
+		ec.marshalOWebsite2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite,
 		true,
 		false,
 	)
@@ -24027,7 +24065,7 @@ func (ec *executionContext) _VirtualProduct_options(ctx context.Context, field g
 			return obj.Options, nil
 		},
 		nil,
-		ec.marshalOCustomizableOptionInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface,
+		ec.marshalOCustomizableOptionInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface,
 		true,
 		false,
 	)
@@ -24114,7 +24152,7 @@ func (ec *executionContext) _VirtualProduct_type(ctx context.Context, field grap
 			return obj.Type, nil
 		},
 		nil,
-		ec.marshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum,
+		ec.marshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum,
 		true,
 		false,
 	)
@@ -25778,7 +25816,7 @@ func (ec *executionContext) unmarshalInputAggregationsFilterInput(ctx context.Co
 		switch k {
 		case "category":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
-			data, err := ec.unmarshalOAggregationsCategoryFilterInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationsCategoryFilterInput(ctx, v)
+			data, err := ec.unmarshalOAggregationsCategoryFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationsCategoryFilterInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -25952,7 +25990,7 @@ func (ec *executionContext) unmarshalInputFilterMatchTypeInput(ctx context.Conte
 			it.Match = data
 		case "match_type":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("match_type"))
-			data, err := ec.unmarshalOFilterMatchTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterMatchTypeEnum(ctx, v)
+			data, err := ec.unmarshalOFilterMatchTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterMatchTypeEnum(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -26019,49 +26057,49 @@ func (ec *executionContext) unmarshalInputProductAttributeFilterInput(ctx contex
 		switch k {
 		case "category_id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_id"))
-			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
+			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.CategoryID = data
 		case "category_uid":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_uid"))
-			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
+			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.CategoryUID = data
 		case "category_url_path":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_url_path"))
-			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
+			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.CategoryURLPath = data
 		case "url_key":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url_key"))
-			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
+			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.URLKey = data
 		case "sku":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sku"))
-			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
+			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Sku = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			data, err := ec.unmarshalOFilterMatchTypeInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterMatchTypeInput(ctx, v)
+			data, err := ec.unmarshalOFilterMatchTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterMatchTypeInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Name = data
 		case "price":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price"))
-			data, err := ec.unmarshalOFilterRangeTypeInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterRangeTypeInput(ctx, v)
+			data, err := ec.unmarshalOFilterRangeTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterRangeTypeInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -26091,28 +26129,28 @@ func (ec *executionContext) unmarshalInputProductAttributeSortInput(ctx context.
 		switch k {
 		case "relevance":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("relevance"))
-			data, err := ec.unmarshalOSortEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortEnum(ctx, v)
+			data, err := ec.unmarshalOSortEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortEnum(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Relevance = data
 		case "position":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("position"))
-			data, err := ec.unmarshalOSortEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortEnum(ctx, v)
+			data, err := ec.unmarshalOSortEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortEnum(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Position = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			data, err := ec.unmarshalOSortEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortEnum(ctx, v)
+			data, err := ec.unmarshalOSortEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortEnum(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Name = data
 		case "price":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price"))
-			data, err := ec.unmarshalOSortEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortEnum(ctx, v)
+			data, err := ec.unmarshalOSortEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortEnum(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -26889,6 +26927,8 @@ func (ec *executionContext) _BundleItemOption(ctx context.Context, sel ast.Selec
 			out.Values[i] = ec._BundleItemOption_label(ctx, field, obj)
 		case "qty":
 			out.Values[i] = ec._BundleItemOption_qty(ctx, field, obj)
+		case "quantity":
+			out.Values[i] = ec._BundleItemOption_quantity(ctx, field, obj)
 		case "position":
 			out.Values[i] = ec._BundleItemOption_position(ctx, field, obj)
 		case "is_default":
@@ -27079,8 +27119,8 @@ func (ec *executionContext) _BundleProduct(ctx context.Context, sel ast.Selectio
 			out.Values[i] = ec._BundleProduct_price_view(ctx, field, obj)
 		case "ship_bundle_items":
 			out.Values[i] = ec._BundleProduct_ship_bundle_items(ctx, field, obj)
-		case "bundle_items":
-			out.Values[i] = ec._BundleProduct_bundle_items(ctx, field, obj)
+		case "items":
+			out.Values[i] = ec._BundleProduct_items(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -30862,11 +30902,11 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAttributeMetadataError2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeMetadataErrorᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AttributeMetadataError) graphql.Marshaler {
+func (ec *executionContext) marshalNAttributeMetadataError2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeMetadataErrorᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AttributeMetadataError) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNAttributeMetadataError2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeMetadataError(ctx, sel, v[i])
+		return ec.marshalNAttributeMetadataError2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeMetadataError(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -30878,7 +30918,7 @@ func (ec *executionContext) marshalNAttributeMetadataError2ᚕᚖgithubᚗcomᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalNAttributeMetadataError2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeMetadataError(ctx context.Context, sel ast.SelectionSet, v *model.AttributeMetadataError) graphql.Marshaler {
+func (ec *executionContext) marshalNAttributeMetadataError2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeMetadataError(ctx context.Context, sel ast.SelectionSet, v *model.AttributeMetadataError) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -30888,21 +30928,21 @@ func (ec *executionContext) marshalNAttributeMetadataError2ᚖgithubᚗcomᚋflo
 	return ec._AttributeMetadataError(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNAttributeMetadataErrorType2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeMetadataErrorType(ctx context.Context, v any) (model.AttributeMetadataErrorType, error) {
+func (ec *executionContext) unmarshalNAttributeMetadataErrorType2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeMetadataErrorType(ctx context.Context, v any) (model.AttributeMetadataErrorType, error) {
 	var res model.AttributeMetadataErrorType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNAttributeMetadataErrorType2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeMetadataErrorType(ctx context.Context, sel ast.SelectionSet, v model.AttributeMetadataErrorType) graphql.Marshaler {
+func (ec *executionContext) marshalNAttributeMetadataErrorType2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeMetadataErrorType(ctx context.Context, sel ast.SelectionSet, v model.AttributeMetadataErrorType) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) marshalNAttributeSelectedOption2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeSelectedOptionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AttributeSelectedOption) graphql.Marshaler {
+func (ec *executionContext) marshalNAttributeSelectedOption2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeSelectedOptionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AttributeSelectedOption) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNAttributeSelectedOption2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeSelectedOption(ctx, sel, v[i])
+		return ec.marshalNAttributeSelectedOption2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeSelectedOption(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -30914,7 +30954,7 @@ func (ec *executionContext) marshalNAttributeSelectedOption2ᚕᚖgithubᚗcom�
 	return ret
 }
 
-func (ec *executionContext) marshalNAttributeSelectedOption2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeSelectedOption(ctx context.Context, sel ast.SelectionSet, v *model.AttributeSelectedOption) graphql.Marshaler {
+func (ec *executionContext) marshalNAttributeSelectedOption2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeSelectedOption(ctx context.Context, sel ast.SelectionSet, v *model.AttributeSelectedOption) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -30924,7 +30964,7 @@ func (ec *executionContext) marshalNAttributeSelectedOption2ᚖgithubᚗcomᚋfl
 	return ec._AttributeSelectedOption(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNAttributeValueInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeValueInterface(ctx context.Context, sel ast.SelectionSet, v model.AttributeValueInterface) graphql.Marshaler {
+func (ec *executionContext) marshalNAttributeValueInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeValueInterface(ctx context.Context, sel ast.SelectionSet, v model.AttributeValueInterface) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -30934,11 +30974,11 @@ func (ec *executionContext) marshalNAttributeValueInterface2githubᚗcomᚋflori
 	return ec._AttributeValueInterface(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNAttributeValueInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeValueInterfaceᚄ(ctx context.Context, sel ast.SelectionSet, v []model.AttributeValueInterface) graphql.Marshaler {
+func (ec *executionContext) marshalNAttributeValueInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeValueInterfaceᚄ(ctx context.Context, sel ast.SelectionSet, v []model.AttributeValueInterface) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNAttributeValueInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeValueInterface(ctx, sel, v[i])
+		return ec.marshalNAttributeValueInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeValueInterface(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -30966,7 +31006,7 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNConfigurableOptionAvailableForSelection2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableOptionAvailableForSelection(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableOptionAvailableForSelection) graphql.Marshaler {
+func (ec *executionContext) marshalNConfigurableOptionAvailableForSelection2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableOptionAvailableForSelection(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableOptionAvailableForSelection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -30976,7 +31016,7 @@ func (ec *executionContext) marshalNConfigurableOptionAvailableForSelection2ᚖg
 	return ec._ConfigurableOptionAvailableForSelection(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNConfigurableProductOption2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOption(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableProductOption) graphql.Marshaler {
+func (ec *executionContext) marshalNConfigurableProductOption2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOption(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableProductOption) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -30986,7 +31026,7 @@ func (ec *executionContext) marshalNConfigurableProductOption2ᚖgithubᚗcomᚋ
 	return ec._ConfigurableProductOption(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNConfigurableProductOptionValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionValue(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableProductOptionValue) graphql.Marshaler {
+func (ec *executionContext) marshalNConfigurableProductOptionValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionValue(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableProductOptionValue) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -31074,7 +31114,7 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNMediaGalleryInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface(ctx context.Context, sel ast.SelectionSet, v model.MediaGalleryInterface) graphql.Marshaler {
+func (ec *executionContext) marshalNMediaGalleryInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface(ctx context.Context, sel ast.SelectionSet, v model.MediaGalleryInterface) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -31084,7 +31124,7 @@ func (ec *executionContext) marshalNMediaGalleryInterface2githubᚗcomᚋflorine
 	return ec._MediaGalleryInterface(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNMoney2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney(ctx context.Context, sel ast.SelectionSet, v *model.Money) graphql.Marshaler {
+func (ec *executionContext) marshalNMoney2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney(ctx context.Context, sel ast.SelectionSet, v *model.Money) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -31094,7 +31134,7 @@ func (ec *executionContext) marshalNMoney2ᚖgithubᚗcomᚋflorinelᚑchisᚋma
 	return ec._Money(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNPriceRange2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceRange(ctx context.Context, sel ast.SelectionSet, v *model.PriceRange) graphql.Marshaler {
+func (ec *executionContext) marshalNPriceRange2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceRange(ctx context.Context, sel ast.SelectionSet, v *model.PriceRange) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -31104,7 +31144,7 @@ func (ec *executionContext) marshalNPriceRange2ᚖgithubᚗcomᚋflorinelᚑchis
 	return ec._PriceRange(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNProductPrice2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrice(ctx context.Context, sel ast.SelectionSet, v *model.ProductPrice) graphql.Marshaler {
+func (ec *executionContext) marshalNProductPrice2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrice(ctx context.Context, sel ast.SelectionSet, v *model.ProductPrice) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -31114,21 +31154,21 @@ func (ec *executionContext) marshalNProductPrice2ᚖgithubᚗcomᚋflorinelᚑch
 	return ec._ProductPrice(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNProductReview2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReview(ctx context.Context, sel ast.SelectionSet, v []*model.ProductReview) graphql.Marshaler {
+func (ec *executionContext) marshalNProductReview2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReview(ctx context.Context, sel ast.SelectionSet, v []*model.ProductReview) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOProductReview2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReview(ctx, sel, v[i])
+		return ec.marshalOProductReview2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReview(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalNProductReviewRating2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviewRatingᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ProductReviewRating) graphql.Marshaler {
+func (ec *executionContext) marshalNProductReviewRating2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviewRatingᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ProductReviewRating) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNProductReviewRating2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviewRating(ctx, sel, v[i])
+		return ec.marshalNProductReviewRating2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviewRating(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -31140,7 +31180,7 @@ func (ec *executionContext) marshalNProductReviewRating2ᚕᚖgithubᚗcomᚋflo
 	return ret
 }
 
-func (ec *executionContext) marshalNProductReviewRating2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviewRating(ctx context.Context, sel ast.SelectionSet, v *model.ProductReviewRating) graphql.Marshaler {
+func (ec *executionContext) marshalNProductReviewRating2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviewRating(ctx context.Context, sel ast.SelectionSet, v *model.ProductReviewRating) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -31150,7 +31190,7 @@ func (ec *executionContext) marshalNProductReviewRating2ᚖgithubᚗcomᚋflorin
 	return ec._ProductReviewRating(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNProductReviews2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviews(ctx context.Context, sel ast.SelectionSet, v *model.ProductReviews) graphql.Marshaler {
+func (ec *executionContext) marshalNProductReviews2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReviews(ctx context.Context, sel ast.SelectionSet, v *model.ProductReviews) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -31160,7 +31200,7 @@ func (ec *executionContext) marshalNProductReviews2ᚖgithubᚗcomᚋflorinelᚑ
 	return ec._ProductReviews(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNSearchResultPageInfo2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchResultPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.SearchResultPageInfo) graphql.Marshaler {
+func (ec *executionContext) marshalNSearchResultPageInfo2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchResultPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.SearchResultPageInfo) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -31327,47 +31367,47 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) marshalOAggregation2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregation(ctx context.Context, sel ast.SelectionSet, v []*model.Aggregation) graphql.Marshaler {
+func (ec *executionContext) marshalOAggregation2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregation(ctx context.Context, sel ast.SelectionSet, v []*model.Aggregation) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOAggregation2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregation(ctx, sel, v[i])
+		return ec.marshalOAggregation2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregation(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOAggregation2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregation(ctx context.Context, sel ast.SelectionSet, v *model.Aggregation) graphql.Marshaler {
+func (ec *executionContext) marshalOAggregation2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregation(ctx context.Context, sel ast.SelectionSet, v *model.Aggregation) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Aggregation(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOAggregationOption2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationOption(ctx context.Context, sel ast.SelectionSet, v []*model.AggregationOption) graphql.Marshaler {
+func (ec *executionContext) marshalOAggregationOption2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationOption(ctx context.Context, sel ast.SelectionSet, v []*model.AggregationOption) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOAggregationOption2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationOption(ctx, sel, v[i])
+		return ec.marshalOAggregationOption2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationOption(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOAggregationOption2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationOption(ctx context.Context, sel ast.SelectionSet, v *model.AggregationOption) graphql.Marshaler {
+func (ec *executionContext) marshalOAggregationOption2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationOption(ctx context.Context, sel ast.SelectionSet, v *model.AggregationOption) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._AggregationOption(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOAggregationsCategoryFilterInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationsCategoryFilterInput(ctx context.Context, v any) (*model.AggregationsCategoryFilterInput, error) {
+func (ec *executionContext) unmarshalOAggregationsCategoryFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationsCategoryFilterInput(ctx context.Context, v any) (*model.AggregationsCategoryFilterInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -31375,7 +31415,7 @@ func (ec *executionContext) unmarshalOAggregationsCategoryFilterInput2ᚖgithub�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOAggregationsFilterInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationsFilterInput(ctx context.Context, v any) (*model.AggregationsFilterInput, error) {
+func (ec *executionContext) unmarshalOAggregationsFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAggregationsFilterInput(ctx context.Context, v any) (*model.AggregationsFilterInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -31383,7 +31423,7 @@ func (ec *executionContext) unmarshalOAggregationsFilterInput2ᚖgithubᚗcomᚋ
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOAttributeFilterInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeFilterInput(ctx context.Context, v any) (*model.AttributeFilterInput, error) {
+func (ec *executionContext) unmarshalOAttributeFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐAttributeFilterInput(ctx context.Context, v any) (*model.AttributeFilterInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -31421,148 +31461,148 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOBreadcrumb2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBreadcrumb(ctx context.Context, sel ast.SelectionSet, v []*model.Breadcrumb) graphql.Marshaler {
+func (ec *executionContext) marshalOBreadcrumb2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBreadcrumb(ctx context.Context, sel ast.SelectionSet, v []*model.Breadcrumb) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOBreadcrumb2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBreadcrumb(ctx, sel, v[i])
+		return ec.marshalOBreadcrumb2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBreadcrumb(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOBreadcrumb2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBreadcrumb(ctx context.Context, sel ast.SelectionSet, v *model.Breadcrumb) graphql.Marshaler {
+func (ec *executionContext) marshalOBreadcrumb2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBreadcrumb(ctx context.Context, sel ast.SelectionSet, v *model.Breadcrumb) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Breadcrumb(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOBundleItem2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItem(ctx context.Context, sel ast.SelectionSet, v []*model.BundleItem) graphql.Marshaler {
+func (ec *executionContext) marshalOBundleItem2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItem(ctx context.Context, sel ast.SelectionSet, v []*model.BundleItem) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOBundleItem2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItem(ctx, sel, v[i])
+		return ec.marshalOBundleItem2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItem(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOBundleItem2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItem(ctx context.Context, sel ast.SelectionSet, v *model.BundleItem) graphql.Marshaler {
+func (ec *executionContext) marshalOBundleItem2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItem(ctx context.Context, sel ast.SelectionSet, v *model.BundleItem) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._BundleItem(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOBundleItemOption2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItemOption(ctx context.Context, sel ast.SelectionSet, v []*model.BundleItemOption) graphql.Marshaler {
+func (ec *executionContext) marshalOBundleItemOption2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItemOption(ctx context.Context, sel ast.SelectionSet, v []*model.BundleItemOption) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOBundleItemOption2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItemOption(ctx, sel, v[i])
+		return ec.marshalOBundleItemOption2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItemOption(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOBundleItemOption2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItemOption(ctx context.Context, sel ast.SelectionSet, v *model.BundleItemOption) graphql.Marshaler {
+func (ec *executionContext) marshalOBundleItemOption2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐBundleItemOption(ctx context.Context, sel ast.SelectionSet, v *model.BundleItemOption) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._BundleItemOption(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOCategoryInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface(ctx context.Context, sel ast.SelectionSet, v model.CategoryInterface) graphql.Marshaler {
+func (ec *executionContext) marshalOCategoryInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface(ctx context.Context, sel ast.SelectionSet, v model.CategoryInterface) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CategoryInterface(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOCategoryInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface(ctx context.Context, sel ast.SelectionSet, v []model.CategoryInterface) graphql.Marshaler {
+func (ec *executionContext) marshalOCategoryInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface(ctx context.Context, sel ast.SelectionSet, v []model.CategoryInterface) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOCategoryInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface(ctx, sel, v[i])
+		return ec.marshalOCategoryInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOCategoryProducts2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryProducts(ctx context.Context, sel ast.SelectionSet, v *model.CategoryProducts) graphql.Marshaler {
+func (ec *executionContext) marshalOCategoryProducts2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryProducts(ctx context.Context, sel ast.SelectionSet, v *model.CategoryProducts) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CategoryProducts(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOCategoryTree2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryTree(ctx context.Context, sel ast.SelectionSet, v []*model.CategoryTree) graphql.Marshaler {
+func (ec *executionContext) marshalOCategoryTree2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryTree(ctx context.Context, sel ast.SelectionSet, v []*model.CategoryTree) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOCategoryTree2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryTree(ctx, sel, v[i])
+		return ec.marshalOCategoryTree2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryTree(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOCategoryTree2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryTree(ctx context.Context, sel ast.SelectionSet, v *model.CategoryTree) graphql.Marshaler {
+func (ec *executionContext) marshalOCategoryTree2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryTree(ctx context.Context, sel ast.SelectionSet, v *model.CategoryTree) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CategoryTree(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOComplexTextValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue(ctx context.Context, sel ast.SelectionSet, v *model.ComplexTextValue) graphql.Marshaler {
+func (ec *executionContext) marshalOComplexTextValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐComplexTextValue(ctx context.Context, sel ast.SelectionSet, v *model.ComplexTextValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ComplexTextValue(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOConfigurableAttributeOption2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableAttributeOption(ctx context.Context, sel ast.SelectionSet, v []*model.ConfigurableAttributeOption) graphql.Marshaler {
+func (ec *executionContext) marshalOConfigurableAttributeOption2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableAttributeOption(ctx context.Context, sel ast.SelectionSet, v []*model.ConfigurableAttributeOption) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOConfigurableAttributeOption2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableAttributeOption(ctx, sel, v[i])
+		return ec.marshalOConfigurableAttributeOption2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableAttributeOption(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOConfigurableAttributeOption2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableAttributeOption(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableAttributeOption) graphql.Marshaler {
+func (ec *executionContext) marshalOConfigurableAttributeOption2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableAttributeOption(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableAttributeOption) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ConfigurableAttributeOption(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOConfigurableOptionAvailableForSelection2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableOptionAvailableForSelectionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ConfigurableOptionAvailableForSelection) graphql.Marshaler {
+func (ec *executionContext) marshalOConfigurableOptionAvailableForSelection2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableOptionAvailableForSelectionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ConfigurableOptionAvailableForSelection) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNConfigurableOptionAvailableForSelection2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableOptionAvailableForSelection(ctx, sel, v[i])
+		return ec.marshalNConfigurableOptionAvailableForSelection2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableOptionAvailableForSelection(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -31574,14 +31614,14 @@ func (ec *executionContext) marshalOConfigurableOptionAvailableForSelection2ᚕ�
 	return ret
 }
 
-func (ec *executionContext) marshalOConfigurableProductOption2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ConfigurableProductOption) graphql.Marshaler {
+func (ec *executionContext) marshalOConfigurableProductOption2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ConfigurableProductOption) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNConfigurableProductOption2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOption(ctx, sel, v[i])
+		return ec.marshalNConfigurableProductOption2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOption(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -31593,14 +31633,14 @@ func (ec *executionContext) marshalOConfigurableProductOption2ᚕᚖgithubᚗcom
 	return ret
 }
 
-func (ec *executionContext) marshalOConfigurableProductOptionValue2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionValueᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ConfigurableProductOptionValue) graphql.Marshaler {
+func (ec *executionContext) marshalOConfigurableProductOptionValue2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionValueᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ConfigurableProductOptionValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNConfigurableProductOptionValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionValue(ctx, sel, v[i])
+		return ec.marshalNConfigurableProductOptionValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionValue(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -31612,74 +31652,74 @@ func (ec *executionContext) marshalOConfigurableProductOptionValue2ᚕᚖgithub�
 	return ret
 }
 
-func (ec *executionContext) marshalOConfigurableProductOptions2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptions(ctx context.Context, sel ast.SelectionSet, v []*model.ConfigurableProductOptions) graphql.Marshaler {
+func (ec *executionContext) marshalOConfigurableProductOptions2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptions(ctx context.Context, sel ast.SelectionSet, v []*model.ConfigurableProductOptions) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOConfigurableProductOptions2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptions(ctx, sel, v[i])
+		return ec.marshalOConfigurableProductOptions2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptions(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOConfigurableProductOptions2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptions(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableProductOptions) graphql.Marshaler {
+func (ec *executionContext) marshalOConfigurableProductOptions2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptions(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableProductOptions) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ConfigurableProductOptions(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOConfigurableProductOptionsSelection2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionsSelection(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableProductOptionsSelection) graphql.Marshaler {
+func (ec *executionContext) marshalOConfigurableProductOptionsSelection2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionsSelection(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableProductOptionsSelection) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ConfigurableProductOptionsSelection(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOConfigurableProductOptionsValues2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionsValues(ctx context.Context, sel ast.SelectionSet, v []*model.ConfigurableProductOptionsValues) graphql.Marshaler {
+func (ec *executionContext) marshalOConfigurableProductOptionsValues2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionsValues(ctx context.Context, sel ast.SelectionSet, v []*model.ConfigurableProductOptionsValues) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOConfigurableProductOptionsValues2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionsValues(ctx, sel, v[i])
+		return ec.marshalOConfigurableProductOptionsValues2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionsValues(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOConfigurableProductOptionsValues2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionsValues(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableProductOptionsValues) graphql.Marshaler {
+func (ec *executionContext) marshalOConfigurableProductOptionsValues2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableProductOptionsValues(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableProductOptionsValues) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ConfigurableProductOptionsValues(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOConfigurableVariant2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableVariant(ctx context.Context, sel ast.SelectionSet, v []*model.ConfigurableVariant) graphql.Marshaler {
+func (ec *executionContext) marshalOConfigurableVariant2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableVariant(ctx context.Context, sel ast.SelectionSet, v []*model.ConfigurableVariant) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOConfigurableVariant2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableVariant(ctx, sel, v[i])
+		return ec.marshalOConfigurableVariant2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableVariant(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOConfigurableVariant2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableVariant(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableVariant) graphql.Marshaler {
+func (ec *executionContext) marshalOConfigurableVariant2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐConfigurableVariant(ctx context.Context, sel ast.SelectionSet, v *model.ConfigurableVariant) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ConfigurableVariant(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOCurrencyEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCurrencyEnum(ctx context.Context, v any) (*model.CurrencyEnum, error) {
+func (ec *executionContext) unmarshalOCurrencyEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCurrencyEnum(ctx context.Context, v any) (*model.CurrencyEnum, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -31688,41 +31728,41 @@ func (ec *executionContext) unmarshalOCurrencyEnum2ᚖgithubᚗcomᚋflorinelᚑ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOCurrencyEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCurrencyEnum(ctx context.Context, sel ast.SelectionSet, v *model.CurrencyEnum) graphql.Marshaler {
+func (ec *executionContext) marshalOCurrencyEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCurrencyEnum(ctx context.Context, sel ast.SelectionSet, v *model.CurrencyEnum) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) marshalOCustomizableAreaValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableAreaValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableAreaValue) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableAreaValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableAreaValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableAreaValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CustomizableAreaValue(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOCustomizableCheckboxValue2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableCheckboxValue(ctx context.Context, sel ast.SelectionSet, v []*model.CustomizableCheckboxValue) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableCheckboxValue2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableCheckboxValue(ctx context.Context, sel ast.SelectionSet, v []*model.CustomizableCheckboxValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOCustomizableCheckboxValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableCheckboxValue(ctx, sel, v[i])
+		return ec.marshalOCustomizableCheckboxValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableCheckboxValue(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOCustomizableCheckboxValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableCheckboxValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableCheckboxValue) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableCheckboxValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableCheckboxValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableCheckboxValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CustomizableCheckboxValue(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOCustomizableDateTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDateTypeEnum(ctx context.Context, v any) (*model.CustomizableDateTypeEnum, error) {
+func (ec *executionContext) unmarshalOCustomizableDateTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDateTypeEnum(ctx context.Context, v any) (*model.CustomizableDateTypeEnum, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -31731,115 +31771,115 @@ func (ec *executionContext) unmarshalOCustomizableDateTypeEnum2ᚖgithubᚗcom�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOCustomizableDateTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDateTypeEnum(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableDateTypeEnum) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableDateTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDateTypeEnum(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableDateTypeEnum) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) marshalOCustomizableDateValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDateValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableDateValue) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableDateValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDateValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableDateValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CustomizableDateValue(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOCustomizableDropDownValue2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDropDownValue(ctx context.Context, sel ast.SelectionSet, v []*model.CustomizableDropDownValue) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableDropDownValue2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDropDownValue(ctx context.Context, sel ast.SelectionSet, v []*model.CustomizableDropDownValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOCustomizableDropDownValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDropDownValue(ctx, sel, v[i])
+		return ec.marshalOCustomizableDropDownValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDropDownValue(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOCustomizableDropDownValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDropDownValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableDropDownValue) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableDropDownValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableDropDownValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableDropDownValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CustomizableDropDownValue(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOCustomizableFieldValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableFieldValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableFieldValue) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableFieldValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableFieldValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableFieldValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CustomizableFieldValue(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOCustomizableFileValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableFileValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableFileValue) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableFileValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableFileValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableFileValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CustomizableFileValue(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOCustomizableMultipleValue2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableMultipleValue(ctx context.Context, sel ast.SelectionSet, v []*model.CustomizableMultipleValue) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableMultipleValue2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableMultipleValue(ctx context.Context, sel ast.SelectionSet, v []*model.CustomizableMultipleValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOCustomizableMultipleValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableMultipleValue(ctx, sel, v[i])
+		return ec.marshalOCustomizableMultipleValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableMultipleValue(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOCustomizableMultipleValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableMultipleValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableMultipleValue) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableMultipleValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableMultipleValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableMultipleValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CustomizableMultipleValue(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOCustomizableOptionInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface(ctx context.Context, sel ast.SelectionSet, v model.CustomizableOptionInterface) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableOptionInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface(ctx context.Context, sel ast.SelectionSet, v model.CustomizableOptionInterface) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CustomizableOptionInterface(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOCustomizableOptionInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface(ctx context.Context, sel ast.SelectionSet, v []model.CustomizableOptionInterface) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableOptionInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface(ctx context.Context, sel ast.SelectionSet, v []model.CustomizableOptionInterface) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOCustomizableOptionInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface(ctx, sel, v[i])
+		return ec.marshalOCustomizableOptionInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableOptionInterface(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOCustomizableRadioValue2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableRadioValue(ctx context.Context, sel ast.SelectionSet, v []*model.CustomizableRadioValue) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableRadioValue2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableRadioValue(ctx context.Context, sel ast.SelectionSet, v []*model.CustomizableRadioValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOCustomizableRadioValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableRadioValue(ctx, sel, v[i])
+		return ec.marshalOCustomizableRadioValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableRadioValue(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOCustomizableRadioValue2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableRadioValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableRadioValue) graphql.Marshaler {
+func (ec *executionContext) marshalOCustomizableRadioValue2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCustomizableRadioValue(ctx context.Context, sel ast.SelectionSet, v *model.CustomizableRadioValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CustomizableRadioValue(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx context.Context, v any) (*model.FilterEqualTypeInput, error) {
+func (ec *executionContext) unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx context.Context, v any) (*model.FilterEqualTypeInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -31847,7 +31887,7 @@ func (ec *executionContext) unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋflo
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOFilterMatchTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterMatchTypeEnum(ctx context.Context, v any) (*model.FilterMatchTypeEnum, error) {
+func (ec *executionContext) unmarshalOFilterMatchTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterMatchTypeEnum(ctx context.Context, v any) (*model.FilterMatchTypeEnum, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -31856,14 +31896,14 @@ func (ec *executionContext) unmarshalOFilterMatchTypeEnum2ᚖgithubᚗcomᚋflor
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOFilterMatchTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterMatchTypeEnum(ctx context.Context, sel ast.SelectionSet, v *model.FilterMatchTypeEnum) graphql.Marshaler {
+func (ec *executionContext) marshalOFilterMatchTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterMatchTypeEnum(ctx context.Context, sel ast.SelectionSet, v *model.FilterMatchTypeEnum) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) unmarshalOFilterMatchTypeInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterMatchTypeInput(ctx context.Context, v any) (*model.FilterMatchTypeInput, error) {
+func (ec *executionContext) unmarshalOFilterMatchTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterMatchTypeInput(ctx context.Context, v any) (*model.FilterMatchTypeInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -31871,7 +31911,7 @@ func (ec *executionContext) unmarshalOFilterMatchTypeInput2ᚖgithubᚗcomᚋflo
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOFilterRangeTypeInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterRangeTypeInput(ctx context.Context, v any) (*model.FilterRangeTypeInput, error) {
+func (ec *executionContext) unmarshalOFilterRangeTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterRangeTypeInput(ctx context.Context, v any) (*model.FilterRangeTypeInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -31879,20 +31919,20 @@ func (ec *executionContext) unmarshalOFilterRangeTypeInput2ᚖgithubᚗcomᚋflo
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOFixedProductTax2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFixedProductTax(ctx context.Context, sel ast.SelectionSet, v []*model.FixedProductTax) graphql.Marshaler {
+func (ec *executionContext) marshalOFixedProductTax2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFixedProductTax(ctx context.Context, sel ast.SelectionSet, v []*model.FixedProductTax) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOFixedProductTax2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFixedProductTax(ctx, sel, v[i])
+		return ec.marshalOFixedProductTax2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFixedProductTax(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOFixedProductTax2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFixedProductTax(ctx context.Context, sel ast.SelectionSet, v *model.FixedProductTax) graphql.Marshaler {
+func (ec *executionContext) marshalOFixedProductTax2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFixedProductTax(ctx context.Context, sel ast.SelectionSet, v *model.FixedProductTax) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -31916,40 +31956,40 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	return graphql.WrapContextMarshaler(ctx, res)
 }
 
-func (ec *executionContext) marshalOGroupedProductItem2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐGroupedProductItem(ctx context.Context, sel ast.SelectionSet, v []*model.GroupedProductItem) graphql.Marshaler {
+func (ec *executionContext) marshalOGroupedProductItem2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐGroupedProductItem(ctx context.Context, sel ast.SelectionSet, v []*model.GroupedProductItem) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOGroupedProductItem2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐGroupedProductItem(ctx, sel, v[i])
+		return ec.marshalOGroupedProductItem2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐGroupedProductItem(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOGroupedProductItem2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐGroupedProductItem(ctx context.Context, sel ast.SelectionSet, v *model.GroupedProductItem) graphql.Marshaler {
+func (ec *executionContext) marshalOGroupedProductItem2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐGroupedProductItem(ctx context.Context, sel ast.SelectionSet, v *model.GroupedProductItem) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._GroupedProductItem(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOHttpQueryParameter2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐHTTPQueryParameter(ctx context.Context, sel ast.SelectionSet, v []*model.HTTPQueryParameter) graphql.Marshaler {
+func (ec *executionContext) marshalOHttpQueryParameter2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐHTTPQueryParameter(ctx context.Context, sel ast.SelectionSet, v []*model.HTTPQueryParameter) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOHttpQueryParameter2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐHTTPQueryParameter(ctx, sel, v[i])
+		return ec.marshalOHttpQueryParameter2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐHTTPQueryParameter(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOHttpQueryParameter2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐHTTPQueryParameter(ctx context.Context, sel ast.SelectionSet, v *model.HTTPQueryParameter) graphql.Marshaler {
+func (ec *executionContext) marshalOHttpQueryParameter2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐHTTPQueryParameter(ctx context.Context, sel ast.SelectionSet, v *model.HTTPQueryParameter) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -32028,54 +32068,54 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) marshalOMediaGalleryEntry2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry(ctx context.Context, sel ast.SelectionSet, v []*model.MediaGalleryEntry) graphql.Marshaler {
+func (ec *executionContext) marshalOMediaGalleryEntry2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry(ctx context.Context, sel ast.SelectionSet, v []*model.MediaGalleryEntry) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOMediaGalleryEntry2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry(ctx, sel, v[i])
+		return ec.marshalOMediaGalleryEntry2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOMediaGalleryEntry2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry(ctx context.Context, sel ast.SelectionSet, v *model.MediaGalleryEntry) graphql.Marshaler {
+func (ec *executionContext) marshalOMediaGalleryEntry2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryEntry(ctx context.Context, sel ast.SelectionSet, v *model.MediaGalleryEntry) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._MediaGalleryEntry(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOMediaGalleryInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface(ctx context.Context, sel ast.SelectionSet, v model.MediaGalleryInterface) graphql.Marshaler {
+func (ec *executionContext) marshalOMediaGalleryInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface(ctx context.Context, sel ast.SelectionSet, v model.MediaGalleryInterface) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._MediaGalleryInterface(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface(ctx context.Context, sel ast.SelectionSet, v []model.MediaGalleryInterface) graphql.Marshaler {
+func (ec *executionContext) marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface(ctx context.Context, sel ast.SelectionSet, v []model.MediaGalleryInterface) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOMediaGalleryInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface(ctx, sel, v[i])
+		return ec.marshalOMediaGalleryInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterfaceᚄ(ctx context.Context, sel ast.SelectionSet, v []model.MediaGalleryInterface) graphql.Marshaler {
+func (ec *executionContext) marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterfaceᚄ(ctx context.Context, sel ast.SelectionSet, v []model.MediaGalleryInterface) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNMediaGalleryInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface(ctx, sel, v[i])
+		return ec.marshalNMediaGalleryInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMediaGalleryInterface(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -32087,41 +32127,41 @@ func (ec *executionContext) marshalOMediaGalleryInterface2ᚕgithubᚗcomᚋflor
 	return ret
 }
 
-func (ec *executionContext) marshalOMoney2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney(ctx context.Context, sel ast.SelectionSet, v *model.Money) graphql.Marshaler {
+func (ec *executionContext) marshalOMoney2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐMoney(ctx context.Context, sel ast.SelectionSet, v *model.Money) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Money(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOPrice2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPrice(ctx context.Context, sel ast.SelectionSet, v *model.Price) graphql.Marshaler {
+func (ec *executionContext) marshalOPrice2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPrice(ctx context.Context, sel ast.SelectionSet, v *model.Price) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Price(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOPriceAdjustment2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustment(ctx context.Context, sel ast.SelectionSet, v []*model.PriceAdjustment) graphql.Marshaler {
+func (ec *executionContext) marshalOPriceAdjustment2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustment(ctx context.Context, sel ast.SelectionSet, v []*model.PriceAdjustment) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOPriceAdjustment2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustment(ctx, sel, v[i])
+		return ec.marshalOPriceAdjustment2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustment(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOPriceAdjustment2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustment(ctx context.Context, sel ast.SelectionSet, v *model.PriceAdjustment) graphql.Marshaler {
+func (ec *executionContext) marshalOPriceAdjustment2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustment(ctx context.Context, sel ast.SelectionSet, v *model.PriceAdjustment) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._PriceAdjustment(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOPriceAdjustmentCodesEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustmentCodesEnum(ctx context.Context, v any) (*model.PriceAdjustmentCodesEnum, error) {
+func (ec *executionContext) unmarshalOPriceAdjustmentCodesEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustmentCodesEnum(ctx context.Context, v any) (*model.PriceAdjustmentCodesEnum, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -32130,14 +32170,14 @@ func (ec *executionContext) unmarshalOPriceAdjustmentCodesEnum2ᚖgithubᚗcom�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOPriceAdjustmentCodesEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustmentCodesEnum(ctx context.Context, sel ast.SelectionSet, v *model.PriceAdjustmentCodesEnum) graphql.Marshaler {
+func (ec *executionContext) marshalOPriceAdjustmentCodesEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustmentCodesEnum(ctx context.Context, sel ast.SelectionSet, v *model.PriceAdjustmentCodesEnum) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) unmarshalOPriceAdjustmentDescriptionEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustmentDescriptionEnum(ctx context.Context, v any) (*model.PriceAdjustmentDescriptionEnum, error) {
+func (ec *executionContext) unmarshalOPriceAdjustmentDescriptionEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustmentDescriptionEnum(ctx context.Context, v any) (*model.PriceAdjustmentDescriptionEnum, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -32146,14 +32186,14 @@ func (ec *executionContext) unmarshalOPriceAdjustmentDescriptionEnum2ᚖgithub�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOPriceAdjustmentDescriptionEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustmentDescriptionEnum(ctx context.Context, sel ast.SelectionSet, v *model.PriceAdjustmentDescriptionEnum) graphql.Marshaler {
+func (ec *executionContext) marshalOPriceAdjustmentDescriptionEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceAdjustmentDescriptionEnum(ctx context.Context, sel ast.SelectionSet, v *model.PriceAdjustmentDescriptionEnum) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) unmarshalOPriceTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum(ctx context.Context, v any) (*model.PriceTypeEnum, error) {
+func (ec *executionContext) unmarshalOPriceTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum(ctx context.Context, v any) (*model.PriceTypeEnum, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -32162,14 +32202,14 @@ func (ec *executionContext) unmarshalOPriceTypeEnum2ᚖgithubᚗcomᚋflorinel�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOPriceTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum(ctx context.Context, sel ast.SelectionSet, v *model.PriceTypeEnum) graphql.Marshaler {
+func (ec *executionContext) marshalOPriceTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceTypeEnum(ctx context.Context, sel ast.SelectionSet, v *model.PriceTypeEnum) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) unmarshalOPriceViewEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceViewEnum(ctx context.Context, v any) (*model.PriceViewEnum, error) {
+func (ec *executionContext) unmarshalOPriceViewEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceViewEnum(ctx context.Context, v any) (*model.PriceViewEnum, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -32178,14 +32218,14 @@ func (ec *executionContext) unmarshalOPriceViewEnum2ᚖgithubᚗcomᚋflorinel�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOPriceViewEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceViewEnum(ctx context.Context, sel ast.SelectionSet, v *model.PriceViewEnum) graphql.Marshaler {
+func (ec *executionContext) marshalOPriceViewEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐPriceViewEnum(ctx context.Context, sel ast.SelectionSet, v *model.PriceViewEnum) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) unmarshalOProductAttributeFilterInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductAttributeFilterInput(ctx context.Context, v any) (*model.ProductAttributeFilterInput, error) {
+func (ec *executionContext) unmarshalOProductAttributeFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductAttributeFilterInput(ctx context.Context, v any) (*model.ProductAttributeFilterInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -32193,7 +32233,7 @@ func (ec *executionContext) unmarshalOProductAttributeFilterInput2ᚖgithubᚗco
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOProductAttributeSortInput2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductAttributeSortInput(ctx context.Context, v any) (*model.ProductAttributeSortInput, error) {
+func (ec *executionContext) unmarshalOProductAttributeSortInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductAttributeSortInput(ctx context.Context, v any) (*model.ProductAttributeSortInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -32201,103 +32241,103 @@ func (ec *executionContext) unmarshalOProductAttributeSortInput2ᚖgithubᚗcom�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOProductCustomAttributes2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductCustomAttributes(ctx context.Context, sel ast.SelectionSet, v *model.ProductCustomAttributes) graphql.Marshaler {
+func (ec *executionContext) marshalOProductCustomAttributes2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductCustomAttributes(ctx context.Context, sel ast.SelectionSet, v *model.ProductCustomAttributes) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ProductCustomAttributes(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOProductDiscount2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductDiscount(ctx context.Context, sel ast.SelectionSet, v *model.ProductDiscount) graphql.Marshaler {
+func (ec *executionContext) marshalOProductDiscount2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductDiscount(ctx context.Context, sel ast.SelectionSet, v *model.ProductDiscount) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ProductDiscount(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOProductImage2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage(ctx context.Context, sel ast.SelectionSet, v *model.ProductImage) graphql.Marshaler {
+func (ec *executionContext) marshalOProductImage2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductImage(ctx context.Context, sel ast.SelectionSet, v *model.ProductImage) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ProductImage(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOProductInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface(ctx context.Context, sel ast.SelectionSet, v model.ProductInterface) graphql.Marshaler {
+func (ec *executionContext) marshalOProductInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface(ctx context.Context, sel ast.SelectionSet, v model.ProductInterface) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ProductInterface(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOProductInterface2ᚕgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface(ctx context.Context, sel ast.SelectionSet, v []model.ProductInterface) graphql.Marshaler {
+func (ec *executionContext) marshalOProductInterface2ᚕgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface(ctx context.Context, sel ast.SelectionSet, v []model.ProductInterface) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOProductInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface(ctx, sel, v[i])
+		return ec.marshalOProductInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductInterface(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOProductLink2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink(ctx context.Context, sel ast.SelectionSet, v []*model.ProductLink) graphql.Marshaler {
+func (ec *executionContext) marshalOProductLink2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink(ctx context.Context, sel ast.SelectionSet, v []*model.ProductLink) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOProductLink2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink(ctx, sel, v[i])
+		return ec.marshalOProductLink2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOProductLink2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink(ctx context.Context, sel ast.SelectionSet, v *model.ProductLink) graphql.Marshaler {
+func (ec *executionContext) marshalOProductLink2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductLink(ctx context.Context, sel ast.SelectionSet, v *model.ProductLink) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ProductLink(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOProductMediaGalleryEntriesContent2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductMediaGalleryEntriesContent(ctx context.Context, sel ast.SelectionSet, v *model.ProductMediaGalleryEntriesContent) graphql.Marshaler {
+func (ec *executionContext) marshalOProductMediaGalleryEntriesContent2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductMediaGalleryEntriesContent(ctx context.Context, sel ast.SelectionSet, v *model.ProductMediaGalleryEntriesContent) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ProductMediaGalleryEntriesContent(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOProductMediaGalleryEntriesVideoContent2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductMediaGalleryEntriesVideoContent(ctx context.Context, sel ast.SelectionSet, v *model.ProductMediaGalleryEntriesVideoContent) graphql.Marshaler {
+func (ec *executionContext) marshalOProductMediaGalleryEntriesVideoContent2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductMediaGalleryEntriesVideoContent(ctx context.Context, sel ast.SelectionSet, v *model.ProductMediaGalleryEntriesVideoContent) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ProductMediaGalleryEntriesVideoContent(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOProductPrice2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrice(ctx context.Context, sel ast.SelectionSet, v *model.ProductPrice) graphql.Marshaler {
+func (ec *executionContext) marshalOProductPrice2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrice(ctx context.Context, sel ast.SelectionSet, v *model.ProductPrice) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ProductPrice(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOProductPrices2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrices(ctx context.Context, sel ast.SelectionSet, v *model.ProductPrices) graphql.Marshaler {
+func (ec *executionContext) marshalOProductPrices2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductPrices(ctx context.Context, sel ast.SelectionSet, v *model.ProductPrices) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ProductPrices(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOProductReview2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReview(ctx context.Context, sel ast.SelectionSet, v *model.ProductReview) graphql.Marshaler {
+func (ec *executionContext) marshalOProductReview2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductReview(ctx context.Context, sel ast.SelectionSet, v *model.ProductReview) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ProductReview(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOProductStockStatus2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductStockStatus(ctx context.Context, v any) (*model.ProductStockStatus, error) {
+func (ec *executionContext) unmarshalOProductStockStatus2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductStockStatus(ctx context.Context, v any) (*model.ProductStockStatus, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -32306,68 +32346,68 @@ func (ec *executionContext) unmarshalOProductStockStatus2ᚖgithubᚗcomᚋflori
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOProductStockStatus2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductStockStatus(ctx context.Context, sel ast.SelectionSet, v *model.ProductStockStatus) graphql.Marshaler {
+func (ec *executionContext) marshalOProductStockStatus2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductStockStatus(ctx context.Context, sel ast.SelectionSet, v *model.ProductStockStatus) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) marshalOProductTierPrices2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices(ctx context.Context, sel ast.SelectionSet, v []*model.ProductTierPrices) graphql.Marshaler {
+func (ec *executionContext) marshalOProductTierPrices2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices(ctx context.Context, sel ast.SelectionSet, v []*model.ProductTierPrices) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOProductTierPrices2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices(ctx, sel, v[i])
+		return ec.marshalOProductTierPrices2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOProductTierPrices2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices(ctx context.Context, sel ast.SelectionSet, v *model.ProductTierPrices) graphql.Marshaler {
+func (ec *executionContext) marshalOProductTierPrices2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProductTierPrices(ctx context.Context, sel ast.SelectionSet, v *model.ProductTierPrices) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ProductTierPrices(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOProducts2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProducts(ctx context.Context, sel ast.SelectionSet, v *model.Products) graphql.Marshaler {
+func (ec *executionContext) marshalOProducts2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐProducts(ctx context.Context, sel ast.SelectionSet, v *model.Products) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Products(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOSearchResultPageInfo2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchResultPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.SearchResultPageInfo) graphql.Marshaler {
+func (ec *executionContext) marshalOSearchResultPageInfo2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchResultPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.SearchResultPageInfo) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._SearchResultPageInfo(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOSearchSuggestion2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchSuggestion(ctx context.Context, sel ast.SelectionSet, v []*model.SearchSuggestion) graphql.Marshaler {
+func (ec *executionContext) marshalOSearchSuggestion2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchSuggestion(ctx context.Context, sel ast.SelectionSet, v []*model.SearchSuggestion) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOSearchSuggestion2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchSuggestion(ctx, sel, v[i])
+		return ec.marshalOSearchSuggestion2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchSuggestion(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOSearchSuggestion2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchSuggestion(ctx context.Context, sel ast.SelectionSet, v *model.SearchSuggestion) graphql.Marshaler {
+func (ec *executionContext) marshalOSearchSuggestion2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchSuggestion(ctx context.Context, sel ast.SelectionSet, v *model.SearchSuggestion) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._SearchSuggestion(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOShipBundleItemsEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐShipBundleItemsEnum(ctx context.Context, v any) (*model.ShipBundleItemsEnum, error) {
+func (ec *executionContext) unmarshalOShipBundleItemsEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐShipBundleItemsEnum(ctx context.Context, v any) (*model.ShipBundleItemsEnum, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -32376,21 +32416,21 @@ func (ec *executionContext) unmarshalOShipBundleItemsEnum2ᚖgithubᚗcomᚋflor
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOShipBundleItemsEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐShipBundleItemsEnum(ctx context.Context, sel ast.SelectionSet, v *model.ShipBundleItemsEnum) graphql.Marshaler {
+func (ec *executionContext) marshalOShipBundleItemsEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐShipBundleItemsEnum(ctx context.Context, sel ast.SelectionSet, v *model.ShipBundleItemsEnum) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) marshalOSimpleProduct2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSimpleProduct(ctx context.Context, sel ast.SelectionSet, v *model.SimpleProduct) graphql.Marshaler {
+func (ec *executionContext) marshalOSimpleProduct2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSimpleProduct(ctx context.Context, sel ast.SelectionSet, v *model.SimpleProduct) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._SimpleProduct(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOSortEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortEnum(ctx context.Context, v any) (*model.SortEnum, error) {
+func (ec *executionContext) unmarshalOSortEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortEnum(ctx context.Context, v any) (*model.SortEnum, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -32399,34 +32439,34 @@ func (ec *executionContext) unmarshalOSortEnum2ᚖgithubᚗcomᚋflorinelᚑchis
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOSortEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortEnum(ctx context.Context, sel ast.SelectionSet, v *model.SortEnum) graphql.Marshaler {
+func (ec *executionContext) marshalOSortEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortEnum(ctx context.Context, sel ast.SelectionSet, v *model.SortEnum) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) marshalOSortField2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortField(ctx context.Context, sel ast.SelectionSet, v []*model.SortField) graphql.Marshaler {
+func (ec *executionContext) marshalOSortField2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortField(ctx context.Context, sel ast.SelectionSet, v []*model.SortField) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOSortField2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortField(ctx, sel, v[i])
+		return ec.marshalOSortField2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortField(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOSortField2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortField(ctx context.Context, sel ast.SelectionSet, v *model.SortField) graphql.Marshaler {
+func (ec *executionContext) marshalOSortField2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortField(ctx context.Context, sel ast.SelectionSet, v *model.SortField) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._SortField(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOSortFields2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortFields(ctx context.Context, sel ast.SelectionSet, v *model.SortFields) graphql.Marshaler {
+func (ec *executionContext) marshalOSortFields2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSortFields(ctx context.Context, sel ast.SelectionSet, v *model.SortFields) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -32481,54 +32521,54 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOSwatchDataInterface2githubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSwatchDataInterface(ctx context.Context, sel ast.SelectionSet, v model.SwatchDataInterface) graphql.Marshaler {
+func (ec *executionContext) marshalOSwatchDataInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSwatchDataInterface(ctx context.Context, sel ast.SelectionSet, v model.SwatchDataInterface) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._SwatchDataInterface(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOTierPrice2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice(ctx context.Context, sel ast.SelectionSet, v []*model.TierPrice) graphql.Marshaler {
+func (ec *executionContext) marshalOTierPrice2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice(ctx context.Context, sel ast.SelectionSet, v []*model.TierPrice) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOTierPrice2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice(ctx, sel, v[i])
+		return ec.marshalOTierPrice2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOTierPrice2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice(ctx context.Context, sel ast.SelectionSet, v *model.TierPrice) graphql.Marshaler {
+func (ec *executionContext) marshalOTierPrice2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐTierPrice(ctx context.Context, sel ast.SelectionSet, v *model.TierPrice) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._TierPrice(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOUrlRewrite2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite(ctx context.Context, sel ast.SelectionSet, v []*model.URLRewrite) graphql.Marshaler {
+func (ec *executionContext) marshalOUrlRewrite2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite(ctx context.Context, sel ast.SelectionSet, v []*model.URLRewrite) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOUrlRewrite2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite(ctx, sel, v[i])
+		return ec.marshalOUrlRewrite2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOUrlRewrite2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite(ctx context.Context, sel ast.SelectionSet, v *model.URLRewrite) graphql.Marshaler {
+func (ec *executionContext) marshalOUrlRewrite2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewrite(ctx context.Context, sel ast.SelectionSet, v *model.URLRewrite) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._UrlRewrite(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum(ctx context.Context, v any) (*model.URLRewriteEntityTypeEnum, error) {
+func (ec *executionContext) unmarshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum(ctx context.Context, v any) (*model.URLRewriteEntityTypeEnum, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -32537,27 +32577,27 @@ func (ec *executionContext) unmarshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcom�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum(ctx context.Context, sel ast.SelectionSet, v *model.URLRewriteEntityTypeEnum) graphql.Marshaler {
+func (ec *executionContext) marshalOUrlRewriteEntityTypeEnum2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐURLRewriteEntityTypeEnum(ctx context.Context, sel ast.SelectionSet, v *model.URLRewriteEntityTypeEnum) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) marshalOWebsite2ᚕᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite(ctx context.Context, sel ast.SelectionSet, v []*model.Website) graphql.Marshaler {
+func (ec *executionContext) marshalOWebsite2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite(ctx context.Context, sel ast.SelectionSet, v []*model.Website) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalOWebsite2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite(ctx, sel, v[i])
+		return ec.marshalOWebsite2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite(ctx, sel, v[i])
 	})
 
 	return ret
 }
 
-func (ec *executionContext) marshalOWebsite2ᚖgithubᚗcomᚋflorinelᚑchisᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite(ctx context.Context, sel ast.SelectionSet, v *model.Website) graphql.Marshaler {
+func (ec *executionContext) marshalOWebsite2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐWebsite(ctx context.Context, sel ast.SelectionSet, v *model.Website) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

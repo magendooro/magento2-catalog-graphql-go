@@ -5,6 +5,7 @@
 *.so
 *.dylib
 /server
+/catalog-graphql
 
 # Test binary
 *.test
@@ -26,5 +27,12 @@ Thumbs.db
 log/
 *.log
 
-# Local config overrides
+# Local config (use config.yaml.example as template)
+config/config.yaml
 config/config.local.yaml
+
+# Internal development docs
+.dev/
+
+# Claude Code
+.claude/

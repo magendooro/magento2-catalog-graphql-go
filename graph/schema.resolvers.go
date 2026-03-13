@@ -8,7 +8,7 @@ package graph
 import (
 	"context"
 
-	"github.com/florinel-chis/magento2-catalog-graphql-go/graph/model"
+	"github.com/magendooro/magento2-catalog-graphql-go/graph/model"
 )
 
 // Products is the resolver for the products field.

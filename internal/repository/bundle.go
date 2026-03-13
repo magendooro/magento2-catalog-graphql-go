@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"fmt"
 	"strings"
 )
@@ -43,9 +44,9 @@ type BundleSelectionData struct {
 
 // BundleAttributeData holds bundle-specific EAV int attributes.
 type BundleAttributeData struct {
-	DynamicPrice  bool // price_type: 0=fixed, 1=dynamic
-	DynamicSku    bool // sku_type
-	DynamicWeight bool // weight_type
+	DynamicPrice  bool // price_type: 0=dynamic, 1=fixed
+	DynamicSku    bool // sku_type: 0=dynamic, 1=fixed
+	DynamicWeight bool // weight_type: 0=dynamic, 1=fixed
 	PriceView     int  // 0=price range, 1=as low as
 	ShipmentType  int  // 0=together, 1=separately
 }
@@ -198,11 +199,11 @@ func (r *BundleRepository) GetBundleAttributesForProducts(ctx context.Context, e
 		ba := result[entityID]
 		switch attrIDMap[attrID] {
 		case "price_type":
-			ba.DynamicPrice = value == 1
+			ba.DynamicPrice = value == 0
 		case "sku_type":
-			ba.DynamicSku = value == 1
+			ba.DynamicSku = value == 0
 		case "weight_type":
-			ba.DynamicWeight = value == 1
+			ba.DynamicWeight = value == 0
 		case "price_view":
 			ba.PriceView = value
 		case "shipment_type":
@@ -210,4 +211,14 @@ func (r *BundleRepository) GetBundleAttributesForProducts(ctx context.Context, e
 		}
 	}
 	return result, nil
+}
+
+// EncodeBundleItemUID encodes a bundle item (option) UID: base64("bundle/{option_id}")
+func EncodeBundleItemUID(optionID int) string {
+	return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("bundle/%d", optionID)))
+}
+
+// EncodeBundleOptionUID encodes a bundle option (selection) UID: base64("bundle/{option_id}/{selection_id}/{qty}")
+func EncodeBundleOptionUID(optionID, selectionID int, qty int) string {
+	return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("bundle/%d/%d/%d", optionID, selectionID, qty)))
 }

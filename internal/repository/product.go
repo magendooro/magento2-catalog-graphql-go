@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/florinel-chis/magento2-catalog-graphql-go/graph/model"
+	"github.com/magendooro/magento2-catalog-graphql-go/graph/model"
 )
 
 // ProductRepository handles product data queries against the Magento database.
@@ -425,6 +425,8 @@ func (r *ProductRepository) buildOrderBy(sort *model.ProductAttributeSortInput, 
 	if len(parts) == 0 {
 		return "cpe.entity_id DESC"
 	}
+	// Add entity_id DESC as secondary sort for stable tie-breaking (matches Magento/OpenSearch)
+	parts = append(parts, "cpe.entity_id DESC")
 	return strings.Join(parts, ", ")
 }
 

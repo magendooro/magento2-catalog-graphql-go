@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/config"
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/repository"
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/service"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/config"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/repository"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/service"
 )
 
 // Resolver is the root resolver. It holds dependencies shared across all resolvers.

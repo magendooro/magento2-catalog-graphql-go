@@ -16,11 +16,11 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/florinel-chis/magento2-catalog-graphql-go/graph"
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/cache"
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/config"
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/database"
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/middleware"
+	"github.com/magendooro/magento2-catalog-graphql-go/graph"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/cache"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/config"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/database"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/middleware"
 )
 
 type App struct {

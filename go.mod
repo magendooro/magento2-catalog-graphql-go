@@ -1,4 +1,4 @@
-module github.com/florinel-chis/magento2-catalog-graphql-go
+module github.com/magendooro/magento2-catalog-graphql-go
 
 go 1.25
 

@@ -62,7 +62,7 @@ func CollectRequestedFields(ctx context.Context) *RequestedFields {
 					rf.Reviews = true
 				case "variants", "configurable_options":
 					rf.Configurable = true
-				case "bundle_items", "dynamic_price", "dynamic_sku", "dynamic_weight", "price_view", "ship_bundle_items":
+				case "items", "dynamic_price", "dynamic_sku", "dynamic_weight", "price_view", "ship_bundle_items":
 					rf.Bundle = true
 				case "image", "small_image", "thumbnail":
 					// These come from EAV, not separate queries — no extra load needed

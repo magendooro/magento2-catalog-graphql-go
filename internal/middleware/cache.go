@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/cache"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/cache"
 	"github.com/rs/zerolog/log"
 )
 

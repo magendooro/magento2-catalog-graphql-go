@@ -1,5 +1,5 @@
 server:
-  port: "8082"
+  port: "8080"
   read_timeout: 30s
   write_timeout: 30s
 
@@ -8,7 +8,7 @@ database:
   port: "3306"
   user: "root"
   password: ""
-  name: "m24-ploom-ae"
+  name: "magento"
   max_open_conns: 25
   max_idle_conns: 10
   conn_max_lifetime: 5m
@@ -25,8 +25,8 @@ graphql:
   max_depth: 15
 
 media:
-  base_url: "https://ploom.ae/media/catalog/product"
+  base_url: ""  # empty = auto-detect from database (web/secure/base_url + /media/catalog/product)
 
 logging:
-  level: "debug"
+  level: "info"
   pretty: true

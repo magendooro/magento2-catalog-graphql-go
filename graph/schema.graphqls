@@ -155,7 +155,7 @@ interface ProductInterface {
     updated_at: String
     country_of_manufacture: String
     manufacturer: Int
-    gift_message_available: String
+    gift_message_available: Boolean
     canonical_url: String
 
     # Images
@@ -267,7 +267,7 @@ type SimpleProduct implements ProductInterface & PhysicalProductInterface & Cust
     updated_at: String
     country_of_manufacture: String
     manufacturer: Int
-    gift_message_available: String
+    gift_message_available: Boolean
     canonical_url: String
     image: ProductImage
     small_image: ProductImage
@@ -332,7 +332,7 @@ type ConfigurableProduct implements ProductInterface & PhysicalProductInterface 
     updated_at: String
     country_of_manufacture: String
     manufacturer: Int
-    gift_message_available: String
+    gift_message_available: Boolean
     canonical_url: String
     image: ProductImage
     small_image: ProductImage
@@ -401,7 +401,7 @@ type VirtualProduct implements ProductInterface & CustomizableProductInterface &
     updated_at: String
     country_of_manufacture: String
     manufacturer: Int
-    gift_message_available: String
+    gift_message_available: Boolean
     canonical_url: String
     image: ProductImage
     small_image: ProductImage
@@ -464,7 +464,7 @@ type GroupedProduct implements ProductInterface & PhysicalProductInterface & Cus
     updated_at: String
     country_of_manufacture: String
     manufacturer: Int
-    gift_message_available: String
+    gift_message_available: Boolean
     canonical_url: String
     image: ProductImage
     small_image: ProductImage
@@ -531,7 +531,7 @@ type BundleProduct implements ProductInterface & PhysicalProductInterface & Cust
     updated_at: String
     country_of_manufacture: String
     manufacturer: Int
-    gift_message_available: String
+    gift_message_available: Boolean
     canonical_url: String
     image: ProductImage
     small_image: ProductImage
@@ -576,7 +576,7 @@ type BundleProduct implements ProductInterface & PhysicalProductInterface & Cust
     dynamic_weight: Boolean
     price_view: PriceViewEnum
     ship_bundle_items: ShipBundleItemsEnum
-    bundle_items: [BundleItem]
+    items: [BundleItem]
 }
 
 # =============================================================================
@@ -676,6 +676,7 @@ type BundleItemOption {
     uid: ID!
     label: String
     qty: Float
+    quantity: Float
     position: Int
     is_default: Boolean
     price: Float

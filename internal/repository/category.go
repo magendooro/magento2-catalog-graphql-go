@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/florinel-chis/magento2-catalog-graphql-go/graph/model"
+	"github.com/magendooro/magento2-catalog-graphql-go/graph/model"
 )
 
 type CategoryRepository struct {

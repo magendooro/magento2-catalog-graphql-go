@@ -13,9 +13,9 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	_ "github.com/go-sql-driver/mysql"
 
-	"github.com/florinel-chis/magento2-catalog-graphql-go/graph"
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/config"
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/middleware"
+	"github.com/magendooro/magento2-catalog-graphql-go/graph"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/config"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/middleware"
 )
 
 var (
@@ -23,19 +23,23 @@ var (
 	testHandler http.Handler
 )
 
+func envOrDefault(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
+}
+
 func TestMain(m *testing.M) {
 	cfg := &config.Config{
 		Database: config.DatabaseConfig{
-			Host:         "127.0.0.1",
-			Port:         "3306",
-			User:         "root",
-			Password:     "",
-			Name:         "m24-ploom-ae",
+			Host:         envOrDefault("TEST_DB_HOST", "127.0.0.1"),
+			Port:         envOrDefault("TEST_DB_PORT", "3306"),
+			User:         envOrDefault("TEST_DB_USER", "root"),
+			Password:     envOrDefault("TEST_DB_PASSWORD", ""),
+			Name:         envOrDefault("TEST_DB_NAME", "magento"),
 			MaxOpenConns: 5,
 			MaxIdleConns: 2,
-		},
-		Media: config.MediaConfig{
-			BaseURL: "https://ploom.ae/media/catalog/product",
 		},
 	}
 
@@ -424,14 +428,14 @@ func TestProductsSortFields(t *testing.T) {
 
 func TestSearchSuggestions(t *testing.T) {
 	result := graphqlRequest(t, `{
-		products(search: "ploom", pageSize: 1) {
+		products(search: "test", pageSize: 1) {
 			suggestions { search }
 		}
 	}`, "default")
 
-	suggs := extractField(result, "data", "products", "suggestions").([]interface{})
-	if len(suggs) == 0 {
-		t.Fatal("expected search suggestions for 'ploom'")
+	suggs := extractField(result, "data", "products", "suggestions")
+	if suggs == nil {
+		t.Skip("no search suggestions in database — search_query table may be empty")
 	}
 }
 
@@ -478,9 +482,9 @@ func TestBundleProduct(t *testing.T) {
 			items {
 				__typename
 				... on BundleProduct {
-					bundle_items {
+					items {
 						option_id uid title required type position
-						options { id uid label qty is_default product { sku name } }
+						options { id uid label qty quantity is_default product { sku name } }
 					}
 					dynamic_price dynamic_sku dynamic_weight price_view ship_bundle_items
 				}
@@ -498,7 +502,7 @@ func TestBundleProduct(t *testing.T) {
 		t.Fatalf("expected BundleProduct, got %v", item["__typename"])
 	}
 
-	bundleItems := item["bundle_items"].([]interface{})
+	bundleItems := item["items"].([]interface{})
 	if len(bundleItems) == 0 {
 		t.Fatal("expected bundle items")
 	}

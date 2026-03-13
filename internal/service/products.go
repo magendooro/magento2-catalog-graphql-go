@@ -6,10 +6,10 @@ import (
 	"math"
 	"time"
 
-	"github.com/florinel-chis/magento2-catalog-graphql-go/graph/model"
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/config"
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/middleware"
-	"github.com/florinel-chis/magento2-catalog-graphql-go/internal/repository"
+	"github.com/magendooro/magento2-catalog-graphql-go/graph/model"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/config"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/middleware"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/repository"
 )
 
 type ProductService struct {
@@ -79,21 +79,28 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 		return nil, err
 	}
 
+	// Determine which fields the client actually requested (must be before early return)
+	rf := CollectRequestedFields(ctx)
+
 	if len(products) == 0 {
 		zero := 0
-		return &model.Products{
+		result := &model.Products{
 			Items:      []model.ProductInterface{},
-			TotalCount: &zero,
+			TotalCount: &totalCount,
 			PageInfo: &model.SearchResultPageInfo{
 				PageSize:    &pageSize,
 				CurrentPage: &currentPage,
 				TotalPages:  &zero,
 			},
-		}, nil
+		}
+		if rf.Aggregations {
+			result.Aggregations = []*model.Aggregation{}
+		}
+		if rf.SortFields {
+			result.SortFields = buildSortFields(search != nil && *search != "")
+		}
+		return result, nil
 	}
-
-	// Determine which fields the client actually requested
-	rf := CollectRequestedFields(ctx)
 
 	// Collect IDs for batch loading
 	entityIDs := make([]int, len(products))
@@ -186,6 +193,9 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 	var aggregations []*model.Aggregation
 	if rf.Aggregations {
 		aggregations = s.loadAggregations(ctx, storeID, search, filter, storeCfg)
+		if aggregations == nil {
+			aggregations = []*model.Aggregation{}
+		}
 	}
 
 	// 6. Load search suggestions only if requested
@@ -200,7 +210,7 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 	// 7. Build sort_fields only if requested
 	var sortFields *model.SortFields
 	if rf.SortFields {
-		sortFields = buildSortFields()
+		sortFields = buildSortFields(search != nil && *search != "")
 	}
 
 	totalPages := int(math.Ceil(float64(totalCount) / float64(pageSize)))
@@ -318,7 +328,7 @@ type productBase struct {
 	updatedAt            *string
 	countryOfManufacture *string
 	manufacturer         *int
-	giftMessageAvailable *string
+	giftMessageAvailable *bool
 	optionsContainer     *string
 	urlKey               *string
 	urlSuffix            *string
@@ -444,7 +454,7 @@ func (b productBase) toBundleProduct(bundleItems []*model.BundleItem, bundleAttr
 		Categories: b.categories, URLRewrites: b.urlRewrites,
 		RelatedProducts: b.relatedProducts, UpsellProducts: b.upsellProducts, CrosssellProducts: b.crosssellProducts,
 		RatingSummary: b.ratingSummary, ReviewCount: b.reviewCount, Reviews: b.reviews,
-		BundleItems: bundleItems,
+		Items: bundleItems,
 	}
 	if bundleAttrs != nil {
 		bp.DynamicPrice = &bundleAttrs.DynamicPrice
@@ -473,6 +483,16 @@ func toComplexText(s *string) *model.ComplexTextValue {
 		return &model.ComplexTextValue{HTML: ""}
 	}
 	return &model.ComplexTextValue{HTML: *s}
+}
+
+// toBoolFromEAV converts a Magento EAV Boolean source value to a Go bool.
+// Magento Boolean source: "0" = No, "1" = Yes, "2" = Use config (resolved to false by default).
+func toBoolFromEAV(s *string) *bool {
+	if s == nil {
+		return nil
+	}
+	v := *s == "1"
+	return &v
 }
 
 func toProductImage(path *string, baseURL string, labelFallback *string) *model.ProductImage {
@@ -692,7 +712,11 @@ func (s *ProductService) buildProductBase(
 	}
 	priceTiers := repository.BuildTierPrices(tierPrices[p.RowID], regularPrice, currency)
 
-	gallery := repository.BuildMediaGallery(mediaGallery[p.RowID], s.cfg.Media.BaseURL, p.Name)
+	mediaBaseURL := storeCfg.MediaBaseURL
+	if s.cfg.Media.BaseURL != "" {
+		mediaBaseURL = s.cfg.Media.BaseURL // config override takes precedence
+	}
+	gallery := repository.BuildMediaGallery(mediaGallery[p.RowID], mediaBaseURL, p.Name)
 
 	inv := inventory[p.EntityID]
 	stockStatus := repository.BuildStockStatus(inv)
@@ -753,14 +777,14 @@ func (s *ProductService) buildProductBase(
 		updatedAt:            strPtr(formatMagentoDate(p.UpdatedAt)),
 		countryOfManufacture: p.CountryOfMfg,
 		manufacturer:         p.Manufacturer,
-		giftMessageAvailable: p.GiftMsgAvail,
+		giftMessageAvailable: toBoolFromEAV(p.GiftMsgAvail),
 		optionsContainer:     p.OptionsContainer,
 		urlKey:               p.URLKey,
 		urlSuffix:            &urlSuffix,
 		canonicalURL:         canonicalURL,
-		image:                toProductImage(p.Image, s.cfg.Media.BaseURL, p.Name),
-		smallImage:           toProductImage(p.SmallImage, s.cfg.Media.BaseURL, p.Name),
-		thumbnail:            toProductImage(p.Thumbnail, s.cfg.Media.BaseURL, p.Name),
+		image:                toProductImage(p.Image, mediaBaseURL, p.Name),
+		smallImage:           toProductImage(p.SmallImage, mediaBaseURL, p.Name),
+		thumbnail:            toProductImage(p.Thumbnail, mediaBaseURL, p.Name),
 		swatchImage:          p.SwatchImage,
 		weight:               p.Weight,
 		priceRange:           priceRange,
@@ -890,11 +914,13 @@ func (s *ProductService) loadBundleData(ctx context.Context, parentEntityIDs []i
 					label = cp.Name
 				}
 
+				selQtyInt := int(sel.SelectionQty)
 				bioption := &model.BundleItemOption{
 					ID:                &sel.SelectionID,
-					UID:               repository.EncodeMagentoUID(sel.SelectionID),
+					UID:               repository.EncodeBundleOptionUID(opt.OptionID, sel.SelectionID, selQtyInt),
 					Label:             label,
 					Qty:               &qty,
+					Quantity:          &qty,
 					Position:          &selPosition,
 					IsDefault:         &isDefault,
 					Price:             &price,
@@ -907,7 +933,7 @@ func (s *ProductService) loadBundleData(ctx context.Context, parentEntityIDs []i
 
 			items = append(items, &model.BundleItem{
 				OptionID: &opt.OptionID,
-				UID:      repository.EncodeMagentoUID(opt.OptionID),
+				UID:      repository.EncodeBundleItemUID(opt.OptionID),
 				Title:    &opt.Title,
 				Required: &required,
 				Type:     &opt.Type,
@@ -1074,16 +1100,19 @@ func bucketToAggregation(bucket *repository.AggregationBucket) *model.Aggregatio
 	}
 }
 
-func buildSortFields() *model.SortFields {
+func buildSortFields(hasSearch bool) *model.SortFields {
 	defaultSort := "position"
+	options := []*model.SortField{
+		{Value: strPtr("position"), Label: strPtr("Position")},
+		{Value: strPtr("name"), Label: strPtr("Product Name")},
+		{Value: strPtr("price"), Label: strPtr("Price")},
+	}
+	if hasSearch {
+		options = append(options, &model.SortField{Value: strPtr("relevance"), Label: strPtr("Relevance")})
+	}
 	return &model.SortFields{
 		Default: &defaultSort,
-		Options: []*model.SortField{
-			{Value: strPtr("position"), Label: strPtr("Position")},
-			{Value: strPtr("name"), Label: strPtr("Product Name")},
-			{Value: strPtr("price"), Label: strPtr("Price")},
-			{Value: strPtr("relevance"), Label: strPtr("Relevance")},
-		},
+		Options: options,
 	}
 }
 

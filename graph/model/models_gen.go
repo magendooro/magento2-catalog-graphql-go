@@ -86,7 +86,7 @@ type ProductInterface interface {
 	GetUpdatedAt() *string
 	GetCountryOfManufacture() *string
 	GetManufacturer() *int
-	GetGiftMessageAvailable() *string
+	GetGiftMessageAvailable() *bool
 	GetCanonicalURL() *string
 	GetImage() *ProductImage
 	GetSmallImage() *ProductImage
@@ -218,6 +218,7 @@ type BundleItemOption struct {
 	UID               string           `json:"uid"`
 	Label             *string          `json:"label,omitempty"`
 	Qty               *float64         `json:"qty,omitempty"`
+	Quantity          *float64         `json:"quantity,omitempty"`
 	Position          *int             `json:"position,omitempty"`
 	IsDefault         *bool            `json:"is_default,omitempty"`
 	Price             *float64         `json:"price,omitempty"`
@@ -249,7 +250,7 @@ type BundleProduct struct {
 	UpdatedAt            *string                       `json:"updated_at,omitempty"`
 	CountryOfManufacture *string                       `json:"country_of_manufacture,omitempty"`
 	Manufacturer         *int                          `json:"manufacturer,omitempty"`
-	GiftMessageAvailable *string                       `json:"gift_message_available,omitempty"`
+	GiftMessageAvailable *bool                         `json:"gift_message_available,omitempty"`
 	CanonicalURL         *string                       `json:"canonical_url,omitempty"`
 	Image                *ProductImage                 `json:"image,omitempty"`
 	SmallImage           *ProductImage                 `json:"small_image,omitempty"`
@@ -290,7 +291,7 @@ type BundleProduct struct {
 	DynamicWeight        *bool                         `json:"dynamic_weight,omitempty"`
 	PriceView            *PriceViewEnum                `json:"price_view,omitempty"`
 	ShipBundleItems      *ShipBundleItemsEnum          `json:"ship_bundle_items,omitempty"`
-	BundleItems          []*BundleItem                 `json:"bundle_items,omitempty"`
+	Items                []*BundleItem                 `json:"items,omitempty"`
 }
 
 func (BundleProduct) IsProductInterface()                         {}
@@ -316,7 +317,7 @@ func (this BundleProduct) GetCreatedAt() *string                  { return this.
 func (this BundleProduct) GetUpdatedAt() *string                  { return this.UpdatedAt }
 func (this BundleProduct) GetCountryOfManufacture() *string       { return this.CountryOfManufacture }
 func (this BundleProduct) GetManufacturer() *int                  { return this.Manufacturer }
-func (this BundleProduct) GetGiftMessageAvailable() *string       { return this.GiftMessageAvailable }
+func (this BundleProduct) GetGiftMessageAvailable() *bool         { return this.GiftMessageAvailable }
 func (this BundleProduct) GetCanonicalURL() *string               { return this.CanonicalURL }
 func (this BundleProduct) GetImage() *ProductImage                { return this.Image }
 func (this BundleProduct) GetSmallImage() *ProductImage           { return this.SmallImage }
@@ -580,7 +581,7 @@ type ConfigurableProduct struct {
 	UpdatedAt                           *string                              `json:"updated_at,omitempty"`
 	CountryOfManufacture                *string                              `json:"country_of_manufacture,omitempty"`
 	Manufacturer                        *int                                 `json:"manufacturer,omitempty"`
-	GiftMessageAvailable                *string                              `json:"gift_message_available,omitempty"`
+	GiftMessageAvailable                *bool                                `json:"gift_message_available,omitempty"`
 	CanonicalURL                        *string                              `json:"canonical_url,omitempty"`
 	Image                               *ProductImage                        `json:"image,omitempty"`
 	SmallImage                          *ProductImage                        `json:"small_image,omitempty"`
@@ -644,7 +645,7 @@ func (this ConfigurableProduct) GetCreatedAt() *string                  { return
 func (this ConfigurableProduct) GetUpdatedAt() *string                  { return this.UpdatedAt }
 func (this ConfigurableProduct) GetCountryOfManufacture() *string       { return this.CountryOfManufacture }
 func (this ConfigurableProduct) GetManufacturer() *int                  { return this.Manufacturer }
-func (this ConfigurableProduct) GetGiftMessageAvailable() *string       { return this.GiftMessageAvailable }
+func (this ConfigurableProduct) GetGiftMessageAvailable() *bool         { return this.GiftMessageAvailable }
 func (this ConfigurableProduct) GetCanonicalURL() *string               { return this.CanonicalURL }
 func (this ConfigurableProduct) GetImage() *ProductImage                { return this.Image }
 func (this ConfigurableProduct) GetSmallImage() *ProductImage           { return this.SmallImage }
@@ -1081,7 +1082,7 @@ type GroupedProduct struct {
 	UpdatedAt            *string                       `json:"updated_at,omitempty"`
 	CountryOfManufacture *string                       `json:"country_of_manufacture,omitempty"`
 	Manufacturer         *int                          `json:"manufacturer,omitempty"`
-	GiftMessageAvailable *string                       `json:"gift_message_available,omitempty"`
+	GiftMessageAvailable *bool                         `json:"gift_message_available,omitempty"`
 	CanonicalURL         *string                       `json:"canonical_url,omitempty"`
 	Image                *ProductImage                 `json:"image,omitempty"`
 	SmallImage           *ProductImage                 `json:"small_image,omitempty"`
@@ -1143,7 +1144,7 @@ func (this GroupedProduct) GetCreatedAt() *string                  { return this
 func (this GroupedProduct) GetUpdatedAt() *string                  { return this.UpdatedAt }
 func (this GroupedProduct) GetCountryOfManufacture() *string       { return this.CountryOfManufacture }
 func (this GroupedProduct) GetManufacturer() *int                  { return this.Manufacturer }
-func (this GroupedProduct) GetGiftMessageAvailable() *string       { return this.GiftMessageAvailable }
+func (this GroupedProduct) GetGiftMessageAvailable() *bool         { return this.GiftMessageAvailable }
 func (this GroupedProduct) GetCanonicalURL() *string               { return this.CanonicalURL }
 func (this GroupedProduct) GetImage() *ProductImage                { return this.Image }
 func (this GroupedProduct) GetSmallImage() *ProductImage           { return this.SmallImage }
@@ -1512,7 +1513,7 @@ type SimpleProduct struct {
 	UpdatedAt            *string                       `json:"updated_at,omitempty"`
 	CountryOfManufacture *string                       `json:"country_of_manufacture,omitempty"`
 	Manufacturer         *int                          `json:"manufacturer,omitempty"`
-	GiftMessageAvailable *string                       `json:"gift_message_available,omitempty"`
+	GiftMessageAvailable *bool                         `json:"gift_message_available,omitempty"`
 	CanonicalURL         *string                       `json:"canonical_url,omitempty"`
 	Image                *ProductImage                 `json:"image,omitempty"`
 	SmallImage           *ProductImage                 `json:"small_image,omitempty"`
@@ -1573,7 +1574,7 @@ func (this SimpleProduct) GetCreatedAt() *string                  { return this.
 func (this SimpleProduct) GetUpdatedAt() *string                  { return this.UpdatedAt }
 func (this SimpleProduct) GetCountryOfManufacture() *string       { return this.CountryOfManufacture }
 func (this SimpleProduct) GetManufacturer() *int                  { return this.Manufacturer }
-func (this SimpleProduct) GetGiftMessageAvailable() *string       { return this.GiftMessageAvailable }
+func (this SimpleProduct) GetGiftMessageAvailable() *bool         { return this.GiftMessageAvailable }
 func (this SimpleProduct) GetCanonicalURL() *string               { return this.CanonicalURL }
 func (this SimpleProduct) GetImage() *ProductImage                { return this.Image }
 func (this SimpleProduct) GetSmallImage() *ProductImage           { return this.SmallImage }
@@ -1777,7 +1778,7 @@ type VirtualProduct struct {
 	UpdatedAt            *string                       `json:"updated_at,omitempty"`
 	CountryOfManufacture *string                       `json:"country_of_manufacture,omitempty"`
 	Manufacturer         *int                          `json:"manufacturer,omitempty"`
-	GiftMessageAvailable *string                       `json:"gift_message_available,omitempty"`
+	GiftMessageAvailable *bool                         `json:"gift_message_available,omitempty"`
 	CanonicalURL         *string                       `json:"canonical_url,omitempty"`
 	Image                *ProductImage                 `json:"image,omitempty"`
 	SmallImage           *ProductImage                 `json:"small_image,omitempty"`
@@ -1837,7 +1838,7 @@ func (this VirtualProduct) GetCreatedAt() *string                  { return this
 func (this VirtualProduct) GetUpdatedAt() *string                  { return this.UpdatedAt }
 func (this VirtualProduct) GetCountryOfManufacture() *string       { return this.CountryOfManufacture }
 func (this VirtualProduct) GetManufacturer() *int                  { return this.Manufacturer }
-func (this VirtualProduct) GetGiftMessageAvailable() *string       { return this.GiftMessageAvailable }
+func (this VirtualProduct) GetGiftMessageAvailable() *bool         { return this.GiftMessageAvailable }
 func (this VirtualProduct) GetCanonicalURL() *string               { return this.CanonicalURL }
 func (this VirtualProduct) GetImage() *ProductImage                { return this.Image }
 func (this VirtualProduct) GetSmallImage() *ProductImage           { return this.SmallImage }
