@@ -1,4 +1,4 @@
-package main
+package tests
 
 import (
 	"bytes"
@@ -23,7 +23,7 @@ import (
 //   - Magento  running at MAGE_GRAPHQL_URL   (default http://localhost/graphql)
 //
 // Run:
-//   go test -v -run TestCompare -count=1 -timeout 120s
+//   go test ./tests/ -v -run TestCompare -count=1 -timeout 120s
 
 const (
 	defaultGoURL   = "http://localhost:8080/graphql"
@@ -577,7 +577,6 @@ func TestCompareNameFilter(t *testing.T) {
 }
 
 func TestCompareConfigurableProduct(t *testing.T) {
-	// Find a configurable product SKU first
 	query := `{
 		products(filter: { sku: { in: ["A1358093"] } }) {
 			items {
@@ -888,7 +887,6 @@ func TestCompareEmptyResult(t *testing.T) {
 // ---------- summary ----------
 
 func TestCompareSummary(t *testing.T) {
-	// This test runs a broad query to compare many fields at once
 	query := `{
 		products(filter: { sku: { eq: "A1358093" } }) {
 			items {

@@ -223,7 +223,7 @@ The service resolves the store code to a `store_id` and uses it for:
 Require a running MySQL database with Magento data:
 
 ```bash
-TEST_DB_NAME=magento TEST_DB_HOST=localhost go test \
+TEST_DB_NAME=magento TEST_DB_HOST=localhost go test ./tests/ \
   -run 'Test(Products|Bundle|Configurable|Search|Health|Store|Swatch|Only|Empty|Review|Category|Price)' \
   -v -timeout 60s
 ```
@@ -239,7 +239,7 @@ Require both the Go service and a Magento instance running against the **same da
 # Run comparison tests
 GO_GRAPHQL_URL=http://localhost:8080/graphql \
 MAGE_GRAPHQL_URL=http://your-magento.local/graphql \
-go test -run TestCompare -v -timeout 300s
+go test ./tests/ -run TestCompare -v -timeout 300s
 ```
 
 See [FEATURES_AND_TESTS.md](FEATURES_AND_TESTS.md) for the full test coverage matrix.

@@ -92,6 +92,9 @@ internal/
   service/               Business logic
     fields.go            GraphQL AST field detection
     products.go          Query orchestration, type mapping, batch loading
+tests/                   Test suites (HTTP-based, no internal imports)
+  integration_test.go    24 integration tests against real MySQL
+  comparison_test.go     26 comparison tests: Go vs Magento PHP
 ```
 
 ## Key Design Decisions

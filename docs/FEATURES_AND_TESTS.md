@@ -40,8 +40,8 @@ Comprehensive documentation of all implemented features, their behavior, test co
 
 | Suite | File | Tests | Purpose | Requires |
 |-------|------|-------|---------|----------|
-| **Integration** | `integration_test.go` | 24 | Verify Go service against real MySQL database | Go service + MySQL |
-| **Comparison** | `comparison_test.go` | 26 + 2 meta | Field-by-field diff of Go service vs Magento PHP | Go service + Magento + MySQL |
+| **Integration** | `tests/integration_test.go` | 24 | Verify Go service against real MySQL database | Go service + MySQL |
+| **Comparison** | `tests/comparison_test.go` | 26 + 2 meta | Field-by-field diff of Go service vs Magento PHP | Go service + Magento + MySQL |
 
 ### Current Results Summary
 

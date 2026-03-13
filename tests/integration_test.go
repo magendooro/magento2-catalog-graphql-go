@@ -1,8 +1,7 @@
-package main
+package tests
 
 import (
 	"bytes"
-	"context"
 	"database/sql"
 	"encoding/json"
 	"net/http"
@@ -18,10 +17,7 @@ import (
 	"github.com/magendooro/magento2-catalog-graphql-go/internal/middleware"
 )
 
-var (
-	testServer  *httptest.Server
-	testHandler http.Handler
-)
+var testHandler http.Handler
 
 func envOrDefault(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
@@ -176,7 +172,6 @@ func TestProductsSearch(t *testing.T) {
 		t.Fatal("expected products for search 'aura'")
 	}
 
-	// All results should contain "aura" in name, sku, or description
 	tc := extractField(result, "data", "products", "total_count").(float64)
 	if tc < 1 {
 		t.Errorf("expected at least 1 result, got %v", tc)
@@ -339,7 +334,6 @@ func TestProductsSorting(t *testing.T) {
 		t.Fatal("expected products")
 	}
 
-	// Verify items are sorted by name ascending
 	var prev string
 	for _, item := range items {
 		name := item.(map[string]interface{})["name"].(string)
@@ -351,7 +345,6 @@ func TestProductsSorting(t *testing.T) {
 }
 
 func TestProductsCategoryFilter(t *testing.T) {
-	// First get a category UID from a known product
 	result := graphqlRequest(t, `{
 		products(filter: { sku: { eq: "B5247819" } }) {
 			items { categories { uid name } }
@@ -362,7 +355,6 @@ func TestProductsCategoryFilter(t *testing.T) {
 	cats := items[0].(map[string]interface{})["categories"].([]interface{})
 	catUID := cats[0].(map[string]interface{})["uid"].(string)
 
-	// Now filter by that category UID
 	result2 := graphqlRequest(t, `{
 		products(filter: { category_uid: { eq: "`+catUID+`" } }, pageSize: 50) {
 			items { sku }
@@ -388,7 +380,6 @@ func TestProductsAggregations(t *testing.T) {
 		t.Fatal("expected aggregations")
 	}
 
-	// Should have category_id and price at minimum
 	codes := make(map[string]bool)
 	for _, agg := range aggs {
 		a := agg.(map[string]interface{})
@@ -440,7 +431,6 @@ func TestSearchSuggestions(t *testing.T) {
 }
 
 func TestConfigurableProduct(t *testing.T) {
-	// Find a configurable product
 	result := graphqlRequest(t, `{
 		products(pageSize: 50) {
 			items {
@@ -566,7 +556,6 @@ func TestReviewFields(t *testing.T) {
 	items := extractProducts(result)
 	item := items[0].(map[string]interface{})
 
-	// rating_summary should be a number (0 if no reviews)
 	if _, ok := item["rating_summary"].(float64); !ok {
 		t.Error("expected rating_summary to be a number")
 	}
@@ -578,7 +567,6 @@ func TestReviewFields(t *testing.T) {
 }
 
 func TestCategoryIDFilter(t *testing.T) {
-	// Get a category ID from a known product
 	result := graphqlRequest(t, `{
 		products(filter: { sku: { eq: "B5247819" } }) {
 			items { categories { uid name } }
@@ -589,9 +577,6 @@ func TestCategoryIDFilter(t *testing.T) {
 	cats := items[0].(map[string]interface{})["categories"].([]interface{})
 	catUID := cats[0].(map[string]interface{})["uid"].(string)
 
-	// category_id filter uses raw integer, not base64 UID
-	// Since we know this product is in "Bundles" category, let's find its raw ID
-	// by filtering with category_uid and checking total_count matches category_id filter
 	result2 := graphqlRequest(t, `{
 		products(filter: { category_uid: { eq: "`+catUID+`" } }, pageSize: 50) {
 			total_count
@@ -603,8 +588,6 @@ func TestCategoryIDFilter(t *testing.T) {
 		t.Skip("no products in category")
 	}
 
-	// Now the category_id filter should give the same count - but category_id uses raw IDs
-	// We can't easily decode the UID in Go test, so just verify the filter doesn't error
 	result3 := graphqlRequest(t, `{
 		products(filter: { category_id: { eq: "4" } }, pageSize: 1) {
 			total_count
@@ -612,7 +595,6 @@ func TestCategoryIDFilter(t *testing.T) {
 	}`, "default")
 
 	tc := extractField(result3, "data", "products", "total_count")
-	// Just verify it doesn't error and returns a number
 	if tc == nil {
 		t.Error("expected total_count from category_id filter")
 	}
@@ -629,7 +611,6 @@ func TestSwatchImage(t *testing.T) {
 	if len(items) == 0 {
 		t.Fatal("expected products")
 	}
-	// swatch_image may be null for most products, just verify the field is present
 	_ = items[0].(map[string]interface{})["swatch_image"]
 }
 
@@ -644,16 +625,13 @@ func TestOnlyXLeftInStock(t *testing.T) {
 	if len(items) == 0 {
 		t.Fatal("expected products")
 	}
-	// only_x_left_in_stock should be null (threshold is 0/disabled)
 	item := items[0].(map[string]interface{})
 	if item["only_x_left_in_stock"] != nil {
 		t.Log("only_x_left_in_stock is set (stock threshold configured)")
 	}
 }
 
-// TestStoreMiddleware ensures store resolution works
 func TestStoreMiddleware(t *testing.T) {
-	// With valid store code
 	result := graphqlRequest(t, `{
 		products(pageSize: 1) { items { sku } }
 	}`, "default")
@@ -664,11 +642,7 @@ func TestStoreMiddleware(t *testing.T) {
 	}
 }
 
-// TestHealthEndpoint ensures database health is exposed
 func TestHealthEndpoint(t *testing.T) {
-	_ = context.Background() // ensure context is available
-	// Health is tested via curl in the integration flow; this test just validates
-	// that the query resolver works
 	result := graphqlRequest(t, `{ products(pageSize: 1) { total_count } }`, "default")
 	tc := extractField(result, "data", "products", "total_count").(float64)
 	if tc < 1 {
