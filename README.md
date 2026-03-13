@@ -1,4 +1,6 @@
-# magento2-catalog-graphql-go
+<p align="center">
+  <img src="docs/logo.png" alt="magento2-catalog-graphql-go" width="600">
+</p>
 
 High-performance Go drop-in replacement for Magento 2's `products()` GraphQL query. Reads directly from Magento's MySQL database, delivering identical results at 7-18x the speed of PHP. Supports all product types, EAV attributes, pricing, inventory, categories, URL rewrites, reviews, aggregations, and multi-store scoping via gqlgen.
 
