@@ -71,8 +71,8 @@ func (a *App) Run() error {
 		Resolvers: resolver,
 	}))
 
-	// GraphQL query depth and complexity limits
-	if a.cfg.GraphQL.MaxDepth > 0 {
+	// GraphQL query complexity and depth limits
+	if a.cfg.GraphQL.ComplexityLimit > 0 {
 		srv.Use(extension.FixedComplexityLimit(a.cfg.GraphQL.ComplexityLimit))
 	}
 

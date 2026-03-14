@@ -97,6 +97,9 @@ func (r *BundleRepository) GetBundleOptionsForProducts(ctx context.Context, pare
 		}
 		result[bo.ParentID] = append(result[bo.ParentID], bo)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("bundle options rows iteration failed: %w", err)
+	}
 	return result, nil
 }
 
@@ -136,6 +139,9 @@ func (r *BundleRepository) GetBundleSelectionsForOptions(ctx context.Context, op
 			return nil, fmt.Errorf("bundle selections scan failed: %w", err)
 		}
 		result[bs.OptionID] = append(result[bs.OptionID], bs)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("bundle selections rows iteration failed: %w", err)
 	}
 	return result, nil
 }
@@ -209,6 +215,9 @@ func (r *BundleRepository) GetBundleAttributesForProducts(ctx context.Context, e
 		case "shipment_type":
 			ba.ShipmentType = value
 		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("bundle attributes rows iteration failed: %w", err)
 	}
 	return result, nil
 }

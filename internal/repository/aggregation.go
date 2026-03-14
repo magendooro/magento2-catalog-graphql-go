@@ -70,6 +70,9 @@ func (r *AggregationRepository) GetFilterableAttributes(ctx context.Context, inS
 		}
 		attrs = append(attrs, fa)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("filterable attributes rows iteration failed: %w", err)
+	}
 	return attrs, nil
 }
 
@@ -163,6 +166,9 @@ func (r *AggregationRepository) GetSelectAggregations(ctx context.Context, attr 
 		opt.Value = fmt.Sprintf("%d", optionID)
 		bucket.Options = append(bucket.Options, opt)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("select aggregation rows iteration failed: %w", err)
+	}
 
 	if len(bucket.Options) == 0 {
 		return nil, nil
@@ -221,6 +227,9 @@ func (r *AggregationRepository) GetPriceAggregation(ctx context.Context, matchin
 		opt.Label = fmt.Sprintf("%.0f-%.0f", priceFrom, priceTo+0.01)
 		bucket.Options = append(bucket.Options, opt)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("price aggregation rows iteration failed: %w", err)
+	}
 
 	if len(bucket.Options) == 0 {
 		return nil, nil
@@ -275,6 +284,9 @@ func (r *AggregationRepository) GetCategoryAggregation(ctx context.Context, matc
 		}
 		opt.Value = fmt.Sprintf("%d", categoryID)
 		bucket.Options = append(bucket.Options, opt)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("category aggregation rows iteration failed: %w", err)
 	}
 
 	if len(bucket.Options) == 0 {

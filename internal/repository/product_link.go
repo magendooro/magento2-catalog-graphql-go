@@ -64,6 +64,9 @@ func (r *ProductLinkRepository) GetLinksForProducts(ctx context.Context, product
 		}
 		result[productID] = append(result[productID], linkedID)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("product links rows iteration failed: %w", err)
+	}
 	return result, nil
 }
 
@@ -110,6 +113,9 @@ func (r *ProductLinkRepository) GetAllLinksForProducts(ctx context.Context, prod
 		case LinkTypeCrosssell:
 			crosssell[productID] = append(crosssell[productID], linkedID)
 		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, nil, nil, fmt.Errorf("product links rows iteration failed: %w", err)
 	}
 	return related, upsell, crosssell, nil
 }

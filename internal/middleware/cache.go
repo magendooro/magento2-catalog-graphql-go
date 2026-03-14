@@ -24,8 +24,8 @@ func CacheMiddleware(c *cache.Client) func(http.Handler) http.Handler {
 				return
 			}
 
-			// Read request body
-			body, err := io.ReadAll(r.Body)
+			// Read request body (limit to 1MB to prevent memory exhaustion)
+			body, err := io.ReadAll(io.LimitReader(r.Body, 1<<20))
 			if err != nil {
 				next.ServeHTTP(w, r)
 				return

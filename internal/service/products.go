@@ -6,6 +6,8 @@ import (
 	"math"
 	"time"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/magendooro/magento2-catalog-graphql-go/graph/model"
 	"github.com/magendooro/magento2-catalog-graphql-go/internal/config"
 	"github.com/magendooro/magento2-catalog-graphql-go/internal/middleware"
@@ -123,22 +125,34 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 	var urlRewrites map[int][]*repository.URLRewriteData
 
 	if rf.PriceRange {
-		prices, _ = s.priceRepo.GetPricesForProducts(ctx, entityIDs, storeCfg.WebsiteID)
+		if prices, err = s.priceRepo.GetPricesForProducts(ctx, entityIDs, storeCfg.WebsiteID); err != nil {
+			log.Warn().Err(err).Msg("failed to load prices")
+		}
 	}
 	if rf.PriceTiers {
-		tierPrices, _ = s.priceRepo.GetTierPricesForProducts(ctx, rowIDs, storeCfg.WebsiteID)
+		if tierPrices, err = s.priceRepo.GetTierPricesForProducts(ctx, rowIDs, storeCfg.WebsiteID); err != nil {
+			log.Warn().Err(err).Msg("failed to load tier prices")
+		}
 	}
 	if rf.MediaGallery {
-		mediaGallery, _ = s.mediaRepo.GetMediaForProducts(ctx, rowIDs, storeID)
+		if mediaGallery, err = s.mediaRepo.GetMediaForProducts(ctx, rowIDs, storeID); err != nil {
+			log.Warn().Err(err).Msg("failed to load media gallery")
+		}
 	}
 	if rf.Inventory {
-		inventory, _ = s.inventoryRepo.GetInventoryForProducts(ctx, entityIDs)
+		if inventory, err = s.inventoryRepo.GetInventoryForProducts(ctx, entityIDs); err != nil {
+			log.Warn().Err(err).Msg("failed to load inventory")
+		}
 	}
 	if rf.Categories {
-		categories, _ = s.categoryRepo.GetCategoriesForProducts(ctx, entityIDs, storeID)
+		if categories, err = s.categoryRepo.GetCategoriesForProducts(ctx, entityIDs, storeID); err != nil {
+			log.Warn().Err(err).Msg("failed to load categories")
+		}
 	}
 	if rf.URLRewrites {
-		urlRewrites, _ = s.urlRepo.GetURLRewritesForProducts(ctx, entityIDs, storeID)
+		if urlRewrites, err = s.urlRepo.GetURLRewritesForProducts(ctx, entityIDs, storeID); err != nil {
+			log.Warn().Err(err).Msg("failed to load URL rewrites")
+		}
 	}
 
 	// 3b. Load type-specific data only if requested
@@ -171,7 +185,9 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 	// 3c. Load review summaries if requested
 	var reviewSummaries map[int]*repository.ReviewSummaryData
 	if rf.Reviews {
-		reviewSummaries, _ = s.reviewRepo.GetReviewSummariesForProducts(ctx, entityIDs, storeID)
+		if reviewSummaries, err = s.reviewRepo.GetReviewSummariesForProducts(ctx, entityIDs, storeID); err != nil {
+			log.Warn().Err(err).Msg("failed to load review summaries")
+		}
 	}
 
 	// 3d. Load related/upsell/crosssell product links only if requested
@@ -201,7 +217,10 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 	// 6. Load search suggestions only if requested
 	var suggestions []*model.SearchSuggestion
 	if rf.Suggestions && search != nil && *search != "" {
-		suggData, _ := s.searchRepo.GetSearchSuggestions(ctx, *search, storeID, 10)
+		var suggData []*repository.SearchSuggestionData
+		if suggData, err = s.searchRepo.GetSearchSuggestions(ctx, *search, storeID, 10); err != nil {
+			log.Warn().Err(err).Msg("failed to load search suggestions")
+		}
 		for _, sd := range suggData {
 			suggestions = append(suggestions, &model.SearchSuggestion{Search: sd.QueryText})
 		}

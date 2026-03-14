@@ -61,6 +61,9 @@ func (r *URLRepository) GetURLRewritesForProducts(ctx context.Context, entityIDs
 		}
 		result[u.EntityID] = append(result[u.EntityID], u)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("url rewrite rows iteration failed: %w", err)
+	}
 	return result, nil
 }
 

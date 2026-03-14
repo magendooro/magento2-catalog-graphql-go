@@ -98,6 +98,9 @@ func (r *CategoryRepository) GetCategoriesForProducts(ctx context.Context, entit
 		}
 		result[productID] = append(result[productID], c)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("category rows iteration failed: %w", err)
+	}
 	return result, nil
 }
 

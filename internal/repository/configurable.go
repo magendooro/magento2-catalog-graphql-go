@@ -116,6 +116,9 @@ func (r *ConfigurableRepository) GetSuperAttributesForProducts(ctx context.Conte
 		}
 		result[sa.ProductID] = append(result[sa.ProductID], sa)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("super attributes rows iteration failed: %w", err)
+	}
 	return result, nil
 }
 
@@ -150,6 +153,9 @@ func (r *ConfigurableRepository) GetSuperLinksForProducts(ctx context.Context, p
 			return nil, fmt.Errorf("super links scan failed: %w", err)
 		}
 		result[parentID] = append(result[parentID], childID)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("super links rows iteration failed: %w", err)
 	}
 	return result, nil
 }
@@ -195,6 +201,9 @@ func (r *ConfigurableRepository) GetAttributeOptionLabels(ctx context.Context, o
 			return nil, fmt.Errorf("option labels scan failed: %w", err)
 		}
 		result[optionID] = label
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("option labels rows iteration failed: %w", err)
 	}
 	return result, nil
 }
@@ -247,6 +256,9 @@ func (r *ConfigurableRepository) GetSwatchesForOptions(ctx context.Context, opti
 		}
 		result[sw.OptionID] = sw
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("swatches rows iteration failed: %w", err)
+	}
 	return result, nil
 }
 
@@ -293,6 +305,9 @@ func (r *ConfigurableRepository) GetChildAttributeValues(ctx context.Context, ch
 			result[entityID] = make(map[int]int)
 		}
 		result[entityID][attrID] = value
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("child attribute values rows iteration failed: %w", err)
 	}
 	return result, nil
 }
@@ -380,6 +395,9 @@ func (r *ConfigurableRepository) GetChildProductsEAV(ctx context.Context, childE
 			return nil, fmt.Errorf("child products scan failed: %w", err)
 		}
 		products = append(products, p)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("child products EAV rows iteration failed: %w", err)
 	}
 	return products, nil
 }

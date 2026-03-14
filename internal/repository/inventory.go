@@ -63,6 +63,9 @@ func (r *InventoryRepository) GetInventoryForProducts(ctx context.Context, entit
 		}
 		result[inv.ProductID] = inv
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("inventory rows iteration failed: %w", err)
+	}
 	return result, nil
 }
 

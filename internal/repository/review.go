@@ -74,6 +74,9 @@ func (r *ReviewRepository) GetReviewSummariesForProducts(ctx context.Context, en
 		}
 		result[s.EntityID] = s
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("review summaries rows iteration failed: %w", err)
+	}
 	return result, nil
 }
 
@@ -119,6 +122,9 @@ func (r *ReviewRepository) GetReviewsForProduct(ctx context.Context, entityID in
 		reviews = append(reviews, rv)
 		reviewIDs = append(reviewIDs, rv.ReviewID)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("reviews rows iteration failed: %w", err)
+	}
 
 	if len(reviewIDs) > 0 {
 		// Load ratings for these reviews
@@ -163,6 +169,9 @@ func (r *ReviewRepository) getReviewRatings(ctx context.Context, reviewIDs []int
 			return nil, fmt.Errorf("review ratings scan failed: %w", err)
 		}
 		result[reviewID] = append(result[reviewID], rd)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("review ratings rows iteration failed: %w", err)
 	}
 	return result, nil
 }

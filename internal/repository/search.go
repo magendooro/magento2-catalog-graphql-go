@@ -41,5 +41,8 @@ func (r *SearchRepository) GetSearchSuggestions(ctx context.Context, search stri
 		}
 		suggestions = append(suggestions, s)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("search suggestions rows iteration failed: %w", err)
+	}
 	return suggestions, nil
 }

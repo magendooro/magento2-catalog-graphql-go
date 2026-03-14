@@ -132,7 +132,9 @@ func (r *ProductRepository) FindProducts(ctx context.Context, storeID int, searc
 		}
 	}
 
-	query := "SELECT SQL_CALC_FOUND_ROWS " + strings.Join(selectCols, ", ") + "\n" + joinBuilder.String()
+	// Build the base query (without SELECT prefix yet — we'll add it for both the data and count queries)
+	fromClause := joinBuilder.String()
+	query := "SELECT " + strings.Join(selectCols, ", ") + "\n" + fromClause
 
 	// Build filter conditions
 	conditions, args, extraJoin := r.buildFilterConditions(storeID, search, filter)
@@ -190,10 +192,20 @@ func (r *ProductRepository) FindProducts(ctx context.Context, storeID int, searc
 		}
 		products = append(products, p)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("rows iteration failed: %w", err)
+	}
 
-	// Get total count from SQL_CALC_FOUND_ROWS
+	// Get total count with a separate COUNT(*) query (connection-pool safe, unlike FOUND_ROWS)
+	countQuery := "SELECT COUNT(DISTINCT cpe.entity_id)\n" + fromClause
+	if extraJoin != "" {
+		countQuery += extraJoin
+	}
+	if len(conditions) > 0 {
+		countQuery += "WHERE " + strings.Join(conditions, " AND ")
+	}
 	var totalCount int
-	err = r.db.QueryRowContext(ctx, "SELECT FOUND_ROWS()").Scan(&totalCount)
+	err = r.db.QueryRowContext(ctx, countQuery, args...).Scan(&totalCount)
 	if err != nil {
 		return nil, 0, fmt.Errorf("count query failed: %w", err)
 	}
@@ -269,6 +281,9 @@ func (r *ProductRepository) FindMatchingEntityIDs(ctx context.Context, storeID i
 			return nil, fmt.Errorf("matching entity IDs scan failed: %w", err)
 		}
 		ids = append(ids, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("matching entity IDs rows iteration failed: %w", err)
 	}
 	return ids, nil
 }

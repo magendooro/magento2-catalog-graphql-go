@@ -94,6 +94,9 @@ func (r *MediaRepository) GetMediaForProducts(ctx context.Context, rowIDs []int,
 		seen[key] = true
 		result[m.RowID] = append(result[m.RowID], m)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("media rows iteration failed: %w", err)
+	}
 	return result, nil
 }
 

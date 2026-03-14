@@ -61,6 +61,9 @@ func (r *PriceRepository) GetPricesForProducts(ctx context.Context, entityIDs []
 		}
 		result[p.EntityID] = p
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("price rows iteration failed: %w", err)
+	}
 	return result, nil
 }
 
@@ -110,6 +113,9 @@ func (r *PriceRepository) GetTierPricesForProducts(ctx context.Context, rowIDs [
 			return nil, fmt.Errorf("tier price scan failed: %w", err)
 		}
 		result[tp.RowID] = append(result[tp.RowID], tp)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("tier price rows iteration failed: %w", err)
 	}
 	return result, nil
 }
