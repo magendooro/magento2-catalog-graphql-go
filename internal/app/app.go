@@ -16,6 +16,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/repository"
+
 	"github.com/magendooro/magento2-catalog-graphql-go/graph"
 	"github.com/magendooro/magento2-catalog-graphql-go/internal/cache"
 	"github.com/magendooro/magento2-catalog-graphql-go/internal/config"
@@ -59,6 +61,12 @@ func New(cfg *config.Config) (*App, error) {
 }
 
 func (a *App) Run() error {
+	// Set media cache hash if configured
+	if hash := a.cfg.Media.CacheHash; hash != "" {
+		repository.ImageCacheHash = hash
+		log.Info().Str("hash", hash).Msg("media cache hash configured")
+	}
+
 	// Store resolver middleware
 	storeResolver := middleware.NewStoreResolver(a.db)
 
