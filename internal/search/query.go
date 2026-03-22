@@ -2,11 +2,26 @@ package search
 
 // Query represents an OpenSearch/Elasticsearch search query.
 type Query struct {
-	Query        boolWrapper              `json:"query"`
-	From         int                      `json:"from"`
-	Size         int                      `json:"size"`
-	Sort         []map[string]interface{} `json:"sort,omitempty"`
-	Source       bool                     `json:"_source"`
+	Query        boolWrapper                       `json:"query"`
+	From         int                               `json:"from"`
+	Size         int                               `json:"size"`
+	Sort         []map[string]interface{}          `json:"sort,omitempty"`
+	Source       bool                              `json:"_source"`
+	Aggregations map[string]map[string]interface{} `json:"aggs,omitempty"`
+}
+
+// AggregationBucket holds an aggregation result from OpenSearch.
+type AggregationBucket struct {
+	AttributeCode string
+	Label         string
+	Buckets       []AggregationOption
+}
+
+// AggregationOption holds a single option in an aggregation bucket.
+type AggregationOption struct {
+	Key      string
+	Label    string
+	DocCount int
 }
 
 type boolWrapper struct {
@@ -95,6 +110,39 @@ func (q *Query) AddPriceFilter(from, to *string) {
 		q.Query.Bool.Filter = append(q.Query.Bool.Filter,
 			map[string]interface{}{"range": map[string]interface{}{"price": rangeFilter}},
 		)
+	}
+}
+
+// AddAggregations adds price histogram, category terms, and attribute terms aggregations.
+// filterableAttributes is a list of attribute_codes to aggregate on (select/multiselect types).
+func (q *Query) AddAggregations(priceField string, filterableAttributes []string) {
+	q.Aggregations = make(map[string]map[string]interface{})
+
+	// Price histogram — interval 10 matches Magento's default bucket algorithm
+	q.Aggregations["price"] = map[string]interface{}{
+		"histogram": map[string]interface{}{
+			"field":         priceField,
+			"interval":      10,
+			"min_doc_count": 1,
+		},
+	}
+
+	// Category terms
+	q.Aggregations["category_ids"] = map[string]interface{}{
+		"terms": map[string]interface{}{
+			"field": "category_ids",
+			"size":  100,
+		},
+	}
+
+	// Filterable select/multiselect attributes
+	for _, attr := range filterableAttributes {
+		q.Aggregations[attr] = map[string]interface{}{
+			"terms": map[string]interface{}{
+				"field": attr,
+				"size":  100,
+			},
+		}
 	}
 }
 

@@ -128,6 +128,78 @@ func (c *Client) Search(ctx context.Context, query *Query) ([]int, int, error) {
 	return ids, total, nil
 }
 
+// SearchWithAggregations executes a search and returns entity_ids + aggregation buckets.
+func (c *Client) SearchWithAggregations(ctx context.Context, query *Query) ([]int, int, map[string][]AggregationOption, error) {
+	body, err := json.Marshal(query)
+	if err != nil {
+		return nil, 0, nil, fmt.Errorf("marshal search query: %w", err)
+	}
+
+	url := fmt.Sprintf("%s/%s/_search", c.baseURL, c.indexAlias)
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(body))
+	if err != nil {
+		return nil, 0, nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, 0, nil, fmt.Errorf("search request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, 0, nil, fmt.Errorf("read search response: %w", err)
+	}
+
+	if resp.StatusCode != 200 {
+		return nil, 0, nil, fmt.Errorf("search returned %d: %s", resp.StatusCode, string(respBody[:min(len(respBody), 200)]))
+	}
+
+	var result searchResponseWithAggs
+	if err := json.Unmarshal(respBody, &result); err != nil {
+		return nil, 0, nil, fmt.Errorf("parse search response: %w", err)
+	}
+
+	total := result.Hits.Total.Value
+	ids := make([]int, 0, len(result.Hits.Hits))
+	for _, hit := range result.Hits.Hits {
+		ids = append(ids, hit.ID)
+	}
+
+	// Parse aggregations
+	aggs := make(map[string][]AggregationOption)
+	for name, raw := range result.Aggregations {
+		var aggResult struct {
+			Buckets []struct {
+				Key      json.RawMessage `json:"key"`
+				DocCount int             `json:"doc_count"`
+			} `json:"buckets"`
+		}
+		if err := json.Unmarshal(raw, &aggResult); err != nil {
+			continue
+		}
+		options := make([]AggregationOption, 0, len(aggResult.Buckets))
+		for _, b := range aggResult.Buckets {
+			key := string(b.Key)
+			// Remove quotes from string keys
+			if len(key) > 1 && key[0] == '"' {
+				key = key[1 : len(key)-1]
+			}
+			options = append(options, AggregationOption{
+				Key:      key,
+				DocCount: b.DocCount,
+			})
+		}
+		if len(options) > 0 {
+			aggs[name] = options
+		}
+	}
+
+	return ids, total, aggs, nil
+}
+
 type searchResponse struct {
 	Hits struct {
 		Total struct {
@@ -138,6 +210,11 @@ type searchResponse struct {
 			Score float64 `json:"_score"`
 		} `json:"hits"`
 	} `json:"hits"`
+}
+
+type searchResponseWithAggs struct {
+	searchResponse
+	Aggregations map[string]json.RawMessage `json:"aggregations"`
 }
 
 func loadConfig(db *sql.DB) Config {

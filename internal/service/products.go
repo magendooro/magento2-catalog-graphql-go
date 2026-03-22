@@ -14,7 +14,7 @@ import (
 	"github.com/magendooro/magento2-catalog-graphql-go/internal/config"
 	"github.com/magendooro/magento2-catalog-graphql-go/internal/middleware"
 	"github.com/magendooro/magento2-catalog-graphql-go/internal/repository"
-	"github.com/magendooro/magento2-catalog-graphql-go/internal/search"
+	essearch "github.com/magendooro/magento2-catalog-graphql-go/internal/search"
 )
 
 type ProductService struct {
@@ -32,10 +32,7 @@ type ProductService struct {
 	searchRepo       *repository.SearchRepository
 	storeConfig      *repository.StoreConfigRepository
 	cfg              *config.Config
-	searchClient     interface {
-		Available() bool
-		Search(ctx context.Context, query *search.Query) ([]int, int, error)
-	}
+	searchClient     *essearch.Client
 }
 
 func NewProductService(
@@ -83,18 +80,38 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 		currentPage = 1
 	}
 
+	// Determine which fields the client actually requested (need before ES query)
+	rf := CollectRequestedFields(ctx)
+
 	// 1. Try OpenSearch for search queries; fall back to MySQL
 	var searchEntityIDs []int
 	var esTotal int
+	var esAggregations map[string][]essearch.AggregationOption
 	useES := search != nil && *search != "" && s.searchClient != nil && s.searchClient.Available()
 
 	if useES {
 		esQuery := s.buildESQuery(*search, filter, sort, pageSize, currentPage)
-		var err error
-		searchEntityIDs, esTotal, err = s.searchClient.Search(ctx, esQuery)
-		if err != nil {
-			log.Warn().Err(err).Str("search", *search).Msg("OpenSearch failed, falling back to MySQL")
-			useES = false
+
+		// Add aggregations to ES query if client requested them
+		if rf.Aggregations {
+			filterableAttrs := s.getFilterableAttributeCodes(ctx)
+			esQuery.AddAggregations("price_0_1", filterableAttrs)
+		}
+
+		if rf.Aggregations {
+			var err error
+			searchEntityIDs, esTotal, esAggregations, err = s.searchClient.SearchWithAggregations(ctx, esQuery)
+			if err != nil {
+				log.Warn().Err(err).Str("search", *search).Msg("OpenSearch aggregation search failed, falling back to MySQL")
+				useES = false
+			}
+		} else {
+			var err error
+			searchEntityIDs, esTotal, err = s.searchClient.Search(ctx, esQuery)
+			if err != nil {
+				log.Warn().Err(err).Str("search", *search).Msg("OpenSearch failed, falling back to MySQL")
+				useES = false
+			}
 		}
 	}
 
@@ -116,9 +133,6 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 	if err != nil {
 		return nil, err
 	}
-
-	// Determine which fields the client actually requested (must be before early return)
-	rf := CollectRequestedFields(ctx)
 
 	if len(products) == 0 {
 		zero := 0
@@ -267,9 +281,14 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 		}
 	}
 
-	// 5. Load aggregations only if requested (reuse allMatchingIDs from FindProducts)
+	// 5. Load aggregations — use ES aggregations when available, fall back to MySQL
 	var aggregations []*model.Aggregation
-	if rf.Aggregations {
+	if rf.Aggregations && useES && esAggregations != nil {
+		aggregations = s.mapESAggregations(ctx, esAggregations, storeID)
+		if aggregations == nil {
+			aggregations = []*model.Aggregation{}
+		}
+	} else if rf.Aggregations {
 		aggregations = s.loadAggregations(ctx, storeID, allMatchingIDs, storeCfg)
 		if aggregations == nil {
 			aggregations = []*model.Aggregation{}
@@ -1130,6 +1149,130 @@ func (s *ProductService) loadRelatedProducts(ctx context.Context, entityIDs []in
 
 // loadAggregations computes faceted search aggregation buckets.
 // matchingIDs are all entity IDs matching the filter (from FindProducts), avoiding a duplicate query.
+// getFilterableAttributeCodes returns select/multiselect attribute codes that are filterable.
+func (s *ProductService) getFilterableAttributeCodes(ctx context.Context) []string {
+	attrs, _ := s.aggregationRepo.GetFilterableAttributes(ctx, false)
+	codes := make([]string, 0, len(attrs))
+	for _, a := range attrs {
+		if a.FrontendInput == "select" || a.FrontendInput == "multiselect" || a.FrontendInput == "boolean" {
+			codes = append(codes, a.AttributeCode)
+		}
+	}
+	return codes
+}
+
+// mapESAggregations converts OpenSearch aggregation results to GraphQL model.
+func (s *ProductService) mapESAggregations(ctx context.Context, esAggs map[string][]essearch.AggregationOption, storeID int) []*model.Aggregation {
+	var aggregations []*model.Aggregation
+
+	// Price aggregation — convert histogram buckets to range labels
+	if priceBuckets, ok := esAggs["price"]; ok && len(priceBuckets) > 0 {
+		priceOpts := make([]*model.AggregationOption, 0, len(priceBuckets))
+		for _, b := range priceBuckets {
+			// Histogram key is the bucket start (e.g., "0", "10", "20")
+			var from float64
+			fmt.Sscanf(b.Key, "%f", &from)
+			to := from + 10
+			label := fmt.Sprintf("%.0f-%.0f", from, to)
+			value := fmt.Sprintf("%.0f_%.0f", from, to)
+			count := b.DocCount
+			priceOpts = append(priceOpts, &model.AggregationOption{
+				Label: strPtr(label),
+				Value: value,
+				Count: &count,
+			})
+		}
+		cnt := len(priceOpts)
+		aggregations = append(aggregations, &model.Aggregation{
+			AttributeCode: "price",
+			Label:         strPtr("Price"),
+			Count:         &cnt,
+			Options:       priceOpts,
+		})
+	}
+
+	// Category aggregation — resolve names from DB, encode UIDs
+	if catBuckets, ok := esAggs["category_ids"]; ok && len(catBuckets) > 0 {
+		catOpts := make([]*model.AggregationOption, 0, len(catBuckets))
+		for _, b := range catBuckets {
+			var catID int
+			fmt.Sscanf(b.Key, "%d", &catID)
+			if catID <= 2 { // skip root (1) and default category (2)
+				continue
+			}
+			// Resolve category name
+			label := b.Key
+			name, _ := s.resolveCategoryName(ctx, catID, storeID)
+			if name != "" {
+				label = name
+			}
+			uid := repository.EncodeMagentoUID(catID)
+			count := b.DocCount
+			catOpts = append(catOpts, &model.AggregationOption{
+				Label: strPtr(label),
+				Value: uid,
+				Count: &count,
+			})
+		}
+		cnt := len(catOpts)
+		aggregations = append(aggregations, &model.Aggregation{
+			AttributeCode: "category_uid",
+			Label:         strPtr("Category"),
+			Count:         &cnt,
+			Options:       catOpts,
+		})
+	}
+
+	// Attribute aggregations — resolve option labels
+	attrs, _ := s.aggregationRepo.GetFilterableAttributes(ctx, false)
+	attrMap := make(map[string]*repository.FilterableAttribute)
+	for _, a := range attrs {
+		attrMap[a.AttributeCode] = a
+	}
+
+	for code, buckets := range esAggs {
+		if code == "price" || code == "category_ids" {
+			continue
+		}
+		attr, ok := attrMap[code]
+		if !ok || len(buckets) == 0 {
+			continue
+		}
+
+		opts := make([]*model.AggregationOption, 0, len(buckets))
+		for _, b := range buckets {
+			label := b.Key
+			// Resolve option label from eav_attribute_option_value if possible
+			if resolved, _ := s.aggregationRepo.ResolveOptionLabel(ctx, attr.AttributeID, b.Key, storeID); resolved != "" {
+				label = resolved
+			}
+			count := b.DocCount
+			opts = append(opts, &model.AggregationOption{
+				Label: strPtr(label),
+				Value: b.Key,
+				Count: &count,
+			})
+		}
+
+		cnt := len(opts)
+		aggregations = append(aggregations, &model.Aggregation{
+			AttributeCode: code,
+			Label:         strPtr(attr.FrontendLabel),
+			Count:         &cnt,
+			Options:       opts,
+		})
+	}
+
+	return aggregations
+}
+
+func strPtr(s string) *string { return &s }
+
+// resolveCategoryName looks up a category name by entity_id.
+func (s *ProductService) resolveCategoryName(ctx context.Context, catID, storeID int) (string, error) {
+	return s.categoryRepo.GetCategoryName(ctx, catID, storeID)
+}
+
 func (s *ProductService) loadAggregations(ctx context.Context, storeID int, matchingIDs []int, storeCfg *repository.StoreConfig) []*model.Aggregation {
 	if len(matchingIDs) == 0 {
 		return nil
@@ -1206,8 +1349,7 @@ func buildSortFields(hasSearch bool) *model.SortFields {
 	}
 }
 
-func strPtr(s string) *string { return &s }
-func intPtr(i int) *int       { return &i }
+func intPtr(i int) *int { return &i }
 
 // formatMagentoDate converts Go time strings (RFC3339 from MySQL driver) to Magento format.
 // Input: "2025-07-23T15:55:30Z" → Output: "2025-07-23 15:55:30"
@@ -1241,14 +1383,14 @@ func parseCurrency(code string) model.CurrencyEnum {
 }
 
 // SetSearchClient sets the OpenSearch/Elasticsearch client for full-text search.
-func (s *ProductService) SetSearchClient(client *search.Client) {
+func (s *ProductService) SetSearchClient(client *essearch.Client) {
 	s.searchClient = client
 }
 
 // buildESQuery constructs an OpenSearch query from GraphQL parameters.
-func (s *ProductService) buildESQuery(searchTerm string, filter *model.ProductAttributeFilterInput, sortInput *model.ProductAttributeSortInput, pageSize, currentPage int) *search.Query {
+func (s *ProductService) buildESQuery(searchTerm string, filter *model.ProductAttributeFilterInput, sortInput *model.ProductAttributeSortInput, pageSize, currentPage int) *essearch.Query {
 	from := (currentPage - 1) * pageSize
-	q := search.ProductSearchQuery(searchTerm, from, pageSize)
+	q := essearch.ProductSearchQuery(searchTerm, from, pageSize)
 
 	if filter != nil {
 		if filter.CategoryID != nil && filter.CategoryID.Eq != nil {

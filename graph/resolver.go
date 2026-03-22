@@ -7,7 +7,7 @@ import (
 
 	"github.com/magendooro/magento2-catalog-graphql-go/internal/config"
 	"github.com/magendooro/magento2-catalog-graphql-go/internal/repository"
-	"github.com/magendooro/magento2-catalog-graphql-go/internal/search"
+	essearch "github.com/magendooro/magento2-catalog-graphql-go/internal/search"
 	"github.com/magendooro/magento2-catalog-graphql-go/internal/service"
 )
 
@@ -42,7 +42,7 @@ func NewResolver(db *sql.DB, cfg *config.Config) (*Resolver, error) {
 	)
 
 	// Initialize OpenSearch/Elasticsearch client (reads config from DB)
-	searchClient := search.NewClient(db)
+	searchClient := essearch.NewClient(db)
 	if searchClient != nil {
 		productService.SetSearchClient(searchClient)
 	}

@@ -165,3 +165,26 @@ func strPtrDeref(s *string) *string {
 	}
 	return s
 }
+
+// GetCategoryName resolves a category name by entity_id and store_id.
+func (r *CategoryRepository) GetCategoryName(ctx context.Context, categoryID, storeID int) (string, error) {
+	var name string
+	err := r.db.QueryRowContext(ctx, `
+		SELECT COALESCE(store_val.value, default_val.value)
+		FROM catalog_category_entity cce
+		LEFT JOIN catalog_category_entity_varchar default_val
+			ON cce.entity_id = default_val.entity_id
+			AND default_val.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'name' AND entity_type_id = 3)
+			AND default_val.store_id = 0
+		LEFT JOIN catalog_category_entity_varchar store_val
+			ON cce.entity_id = store_val.entity_id
+			AND store_val.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'name' AND entity_type_id = 3)
+			AND store_val.store_id = ?
+		WHERE cce.entity_id = ?`,
+		storeID, categoryID,
+	).Scan(&name)
+	if err != nil {
+		return "", err
+	}
+	return name, nil
+}

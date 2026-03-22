@@ -319,3 +319,20 @@ func (r *AggregationRepository) GetCategoryAggregation(ctx context.Context, matc
 	}
 	return bucket, nil
 }
+
+// ResolveOptionLabel resolves an option value to its label from eav_attribute_option_value.
+func (r *AggregationRepository) ResolveOptionLabel(ctx context.Context, attributeID int, optionValue string, storeID int) (string, error) {
+	var label string
+	err := r.db.QueryRowContext(ctx, `
+		SELECT COALESCE(store_val.value, default_val.value)
+		FROM eav_attribute_option eao
+		LEFT JOIN eav_attribute_option_value default_val ON eao.option_id = default_val.option_id AND default_val.store_id = 0
+		LEFT JOIN eav_attribute_option_value store_val ON eao.option_id = store_val.option_id AND store_val.store_id = ?
+		WHERE eao.attribute_id = ? AND eao.option_id = ?`,
+		storeID, attributeID, optionValue,
+	).Scan(&label)
+	if err != nil {
+		return "", err
+	}
+	return label, nil
+}
