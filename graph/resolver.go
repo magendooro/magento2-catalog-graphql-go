@@ -17,6 +17,12 @@ type Resolver struct {
 }
 
 func NewResolver(db *sql.DB, cfg *config.Config) (*Resolver, error) {
+	// Initialize ConfigProvider (preloads all core_config_data)
+	cp, err := config.NewConfigProvider(db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config provider: %w", err)
+	}
+
 	attrRepo := repository.NewAttributeRepository(db)
 	if err := attrRepo.LoadProductAttributes(context.Background()); err != nil {
 		return nil, fmt.Errorf("failed to load attribute metadata: %w", err)
@@ -34,15 +40,15 @@ func NewResolver(db *sql.DB, cfg *config.Config) (*Resolver, error) {
 	aggregationRepo := repository.NewAggregationRepository(db, attrRepo)
 	reviewRepo := repository.NewReviewRepository(db)
 	searchRepo := repository.NewSearchRepository(db)
-	storeConfigRepo := repository.NewStoreConfigRepository(db)
+	storeConfigRepo := repository.NewStoreConfigRepository(cp)
 
 	productService := service.NewProductService(
 		productRepo, priceRepo, mediaRepo, inventoryRepo,
 		categoryRepo, urlRepo, configurableRepo, bundleRepo, linkRepo, aggregationRepo, reviewRepo, searchRepo, storeConfigRepo, cfg,
 	)
 
-	// Initialize OpenSearch/Elasticsearch client (reads config from DB)
-	searchClient := essearch.NewClient(db)
+	// Initialize OpenSearch/Elasticsearch client
+	searchClient := essearch.NewClient(cp)
 	if searchClient != nil {
 		productService.SetSearchClient(searchClient)
 	}
