@@ -28,7 +28,7 @@ type MediaGalleryData struct {
 }
 
 // GetMediaForProducts batch-loads media gallery entries for products.
-// Uses row_id for Magento EE. Returns map keyed by row_id.
+// Uses entity_id for Magento EE. Returns map keyed by entity_id.
 func (r *MediaRepository) GetMediaForProducts(ctx context.Context, rowIDs []int, storeID int) (map[int][]*MediaGalleryData, error) {
 	if len(rowIDs) == 0 {
 		return nil, nil
@@ -46,7 +46,7 @@ func (r *MediaRepository) GetMediaForProducts(ctx context.Context, rowIDs []int,
 	query := fmt.Sprintf(`
 		SELECT
 			mg.value_id,
-			mgve.row_id,
+			mgve.entity_id,
 			mg.media_type,
 			mg.value AS file,
 			COALESCE(mgv_store.label, mgv_default.label) AS label,
@@ -56,15 +56,15 @@ func (r *MediaRepository) GetMediaForProducts(ctx context.Context, rowIDs []int,
 		INNER JOIN catalog_product_entity_media_gallery_value_to_entity mgve
 			ON mg.value_id = mgve.value_id
 		LEFT JOIN catalog_product_entity_media_gallery_value mgv_default
-			ON mg.value_id = mgv_default.value_id AND mgv_default.row_id = mgve.row_id AND mgv_default.store_id = 0
+			ON mg.value_id = mgv_default.value_id AND mgv_default.entity_id = mgve.entity_id AND mgv_default.store_id = 0
 		LEFT JOIN catalog_product_entity_media_gallery_value mgv_store
-			ON mg.value_id = mgv_store.value_id AND mgv_store.row_id = mgve.row_id AND mgv_store.store_id = ?
-		WHERE mgve.row_id IN (%s)
+			ON mg.value_id = mgv_store.value_id AND mgv_store.entity_id = mgve.entity_id AND mgv_store.store_id = ?
+		WHERE mgve.entity_id IN (%s)
 			AND mg.disabled = 0
 		ORDER BY COALESCE(mgv_store.position, mgv_default.position) ASC
 	`, joinPlaceholders(placeholders))
 
-	// Reorder args: store_id first (for the LEFT JOIN), then row_ids
+	// Reorder args: store_id first (for the LEFT JOIN), then entity_ids
 	finalArgs := make([]interface{}, 0, len(args))
 	finalArgs = append(finalArgs, storeID)
 	for _, id := range rowIDs {
@@ -78,7 +78,7 @@ func (r *MediaRepository) GetMediaForProducts(ctx context.Context, rowIDs []int,
 	defer rows.Close()
 
 	result := make(map[int][]*MediaGalleryData)
-	seen := make(map[string]bool) // dedupe by row_id+value_id
+	seen := make(map[string]bool) // dedupe by entity_id+value_id
 	for rows.Next() {
 		m := &MediaGalleryData{}
 		if err := rows.Scan(&m.ValueID, &m.RowID, &m.MediaType, &m.File, &m.Label, &m.Position, &m.Disabled); err != nil {

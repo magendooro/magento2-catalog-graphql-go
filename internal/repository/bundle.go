@@ -182,7 +182,7 @@ func (r *BundleRepository) GetBundleAttributesForProducts(ctx context.Context, e
 
 	query := `SELECT cpe.entity_id, cpei.attribute_id, cpei.value
 		FROM catalog_product_entity_int cpei
-		JOIN catalog_product_entity cpe ON cpei.row_id = cpe.row_id
+		JOIN catalog_product_entity cpe ON cpei.entity_id = cpe.entity_id
 		WHERE cpe.entity_id IN (` + strings.Join(placeholders, ",") + `)
 		AND cpei.attribute_id IN (` + strings.Join(attrPlaceholders, ",") + `)
 		AND cpei.store_id = 0`

@@ -280,9 +280,9 @@ func (r *AggregationRepository) GetCategoryAggregation(ctx context.Context, matc
 		COUNT(DISTINCT ccp.product_id) as cnt
 		FROM catalog_category_product ccp
 		JOIN catalog_category_entity cce ON ccp.category_id = cce.entity_id
-		LEFT JOIN catalog_category_entity_varchar ccevn_d ON cce.row_id = ccevn_d.row_id
+		LEFT JOIN catalog_category_entity_varchar ccevn_d ON cce.entity_id = ccevn_d.entity_id
 			AND ccevn_d.attribute_id = 45 AND ccevn_d.store_id = 0
-		LEFT JOIN catalog_category_entity_varchar ccevn_s ON cce.row_id = ccevn_s.row_id
+		LEFT JOIN catalog_category_entity_varchar ccevn_s ON cce.entity_id = ccevn_s.entity_id
 			AND ccevn_s.attribute_id = 45 AND ccevn_s.store_id = %d
 		WHERE ccp.product_id IN (`+strings.Join(placeholders, ",")+`)
 		AND cce.level > 1

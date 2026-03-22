@@ -93,9 +93,9 @@ func (r *PriceRepository) GetTierPricesForProducts(ctx context.Context, rowIDs [
 	args[len(rowIDs)] = websiteID
 
 	query := fmt.Sprintf(`
-		SELECT row_id, all_groups, customer_group_id, qty, value, website_id, percentage_value
+		SELECT entity_id, all_groups, customer_group_id, qty, value, website_id, percentage_value
 		FROM catalog_product_entity_tier_price
-		WHERE row_id IN (%s) AND (website_id = ? OR website_id = 0)
+		WHERE entity_id IN (%s) AND (website_id = ? OR website_id = 0)
 		AND (all_groups = 1 OR customer_group_id = 0)
 		ORDER BY qty ASC
 	`, joinPlaceholders(placeholders))

@@ -27,19 +27,26 @@ func envOrDefault(key, fallback string) string {
 }
 
 func TestMain(m *testing.M) {
+	host := envOrDefault("TEST_DB_HOST", "localhost")
 	cfg := &config.Config{
 		Database: config.DatabaseConfig{
-			Host:         envOrDefault("TEST_DB_HOST", "127.0.0.1"),
+			Host:         host,
 			Port:         envOrDefault("TEST_DB_PORT", "3306"),
-			User:         envOrDefault("TEST_DB_USER", "root"),
+			User:         envOrDefault("TEST_DB_USER", "fch"),
 			Password:     envOrDefault("TEST_DB_PASSWORD", ""),
-			Name:         envOrDefault("TEST_DB_NAME", "magento"),
+			Name:         envOrDefault("TEST_DB_NAME", "magento248"),
 			MaxOpenConns: 5,
 			MaxIdleConns: 2,
 		},
 	}
 
-	dsn := cfg.Database.User + ":" + cfg.Database.Password + "@tcp(" + cfg.Database.Host + ":" + cfg.Database.Port + ")/" + cfg.Database.Name + "?parseTime=true"
+	var dsn string
+	if host == "localhost" {
+		socket := envOrDefault("TEST_DB_SOCKET", "/tmp/mysql.sock")
+		dsn = cfg.Database.User + ":" + cfg.Database.Password + "@unix(" + socket + ")/" + cfg.Database.Name + "?parseTime=true"
+	} else {
+		dsn = cfg.Database.User + ":" + cfg.Database.Password + "@tcp(" + cfg.Database.Host + ":" + cfg.Database.Port + ")/" + cfg.Database.Name + "?parseTime=true"
+	}
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		panic("failed to connect to test database: " + err.Error())

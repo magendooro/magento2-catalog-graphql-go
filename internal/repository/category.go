@@ -47,7 +47,7 @@ func (r *CategoryRepository) GetCategoriesForProducts(ctx context.Context, entit
 	}
 
 	// Join catalog_category_product → catalog_category_entity → EAV attributes
-	// Category EAV also uses row_id in Magento EE
+	// Category EAV also uses entity_id in Magento EE
 	query := fmt.Sprintf(`
 		SELECT
 			ccp.product_id,
@@ -63,16 +63,16 @@ func (r *CategoryRepository) GetCategoriesForProducts(ctx context.Context, entit
 			COALESCE(active_s.value, active_d.value) AS is_active
 		FROM catalog_category_product ccp
 		INNER JOIN catalog_category_entity cce ON ccp.category_id = cce.entity_id
-		LEFT JOIN catalog_category_entity_varchar name_d ON cce.row_id = name_d.row_id AND name_d.attribute_id = 45 AND name_d.store_id = 0
-		LEFT JOIN catalog_category_entity_varchar name_s ON cce.row_id = name_s.row_id AND name_s.attribute_id = 45 AND name_s.store_id = %d
-		LEFT JOIN catalog_category_entity_varchar urlkey_d ON cce.row_id = urlkey_d.row_id AND urlkey_d.attribute_id = 124 AND urlkey_d.store_id = 0
-		LEFT JOIN catalog_category_entity_varchar urlkey_s ON cce.row_id = urlkey_s.row_id AND urlkey_s.attribute_id = 124 AND urlkey_s.store_id = %d
-		LEFT JOIN catalog_category_entity_varchar urlpath_d ON cce.row_id = urlpath_d.row_id AND urlpath_d.attribute_id = 125 AND urlpath_d.store_id = 0
-		LEFT JOIN catalog_category_entity_varchar urlpath_s ON cce.row_id = urlpath_s.row_id AND urlpath_s.attribute_id = 125 AND urlpath_s.store_id = %d
-		LEFT JOIN catalog_category_entity_text desc_d ON cce.row_id = desc_d.row_id AND desc_d.attribute_id = 47 AND desc_d.store_id = 0
-		LEFT JOIN catalog_category_entity_text desc_s ON cce.row_id = desc_s.row_id AND desc_s.attribute_id = 47 AND desc_s.store_id = %d
-		LEFT JOIN catalog_category_entity_int active_d ON cce.row_id = active_d.row_id AND active_d.attribute_id = 46 AND active_d.store_id = 0
-		LEFT JOIN catalog_category_entity_int active_s ON cce.row_id = active_s.row_id AND active_s.attribute_id = 46 AND active_s.store_id = %d
+		LEFT JOIN catalog_category_entity_varchar name_d ON cce.entity_id = name_d.entity_id AND name_d.attribute_id = 45 AND name_d.store_id = 0
+		LEFT JOIN catalog_category_entity_varchar name_s ON cce.entity_id = name_s.entity_id AND name_s.attribute_id = 45 AND name_s.store_id = %d
+		LEFT JOIN catalog_category_entity_varchar urlkey_d ON cce.entity_id = urlkey_d.entity_id AND urlkey_d.attribute_id = 124 AND urlkey_d.store_id = 0
+		LEFT JOIN catalog_category_entity_varchar urlkey_s ON cce.entity_id = urlkey_s.entity_id AND urlkey_s.attribute_id = 124 AND urlkey_s.store_id = %d
+		LEFT JOIN catalog_category_entity_varchar urlpath_d ON cce.entity_id = urlpath_d.entity_id AND urlpath_d.attribute_id = 125 AND urlpath_d.store_id = 0
+		LEFT JOIN catalog_category_entity_varchar urlpath_s ON cce.entity_id = urlpath_s.entity_id AND urlpath_s.attribute_id = 125 AND urlpath_s.store_id = %d
+		LEFT JOIN catalog_category_entity_text desc_d ON cce.entity_id = desc_d.entity_id AND desc_d.attribute_id = 47 AND desc_d.store_id = 0
+		LEFT JOIN catalog_category_entity_text desc_s ON cce.entity_id = desc_s.entity_id AND desc_s.attribute_id = 47 AND desc_s.store_id = %d
+		LEFT JOIN catalog_category_entity_int active_d ON cce.entity_id = active_d.entity_id AND active_d.attribute_id = 46 AND active_d.store_id = 0
+		LEFT JOIN catalog_category_entity_int active_s ON cce.entity_id = active_s.entity_id AND active_s.attribute_id = 46 AND active_s.store_id = %d
 		WHERE ccp.product_id IN (%s)
 		AND cce.level > 1
 		ORDER BY cce.level ASC, cce.position ASC

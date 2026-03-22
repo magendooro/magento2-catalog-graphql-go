@@ -92,7 +92,7 @@ var coreEAVAttributes = []eavJoinDef{
 func (r *ProductRepository) FindProducts(ctx context.Context, storeID int, search *string, filter *model.ProductAttributeFilterInput, sort *model.ProductAttributeSortInput, pageSize, currentPage int) ([]*ProductEAVValues, int, []int, error) {
 	// Build SELECT columns
 	selectCols := []string{
-		"cpe.entity_id", "cpe.row_id", "cpe.sku", "cpe.type_id", "cpe.attribute_set_id",
+		"cpe.entity_id", "cpe.entity_id", "cpe.sku", "cpe.type_id", "cpe.attribute_set_id",
 		"cpe.created_at", "cpe.updated_at",
 	}
 
@@ -116,14 +116,14 @@ func (r *ProductRepository) FindProducts(ctx context.Context, storeID int, searc
 		// Default store JOIN
 		defaultAlias := attr.alias + "_d"
 		fmt.Fprintf(&joinBuilder,
-			"LEFT JOIN %s %s ON cpe.row_id = %s.row_id AND %s.attribute_id = %d AND %s.store_id = 0\n",
+			"LEFT JOIN %s %s ON cpe.entity_id = %s.entity_id AND %s.attribute_id = %d AND %s.store_id = 0\n",
 			table, defaultAlias, defaultAlias, defaultAlias, meta.AttributeID, defaultAlias,
 		)
 
 		if storeID > 0 {
 			storeAlias := attr.alias + "_s"
 			fmt.Fprintf(&joinBuilder,
-				"LEFT JOIN %s %s ON cpe.row_id = %s.row_id AND %s.attribute_id = %d AND %s.store_id = %d\n",
+				"LEFT JOIN %s %s ON cpe.entity_id = %s.entity_id AND %s.attribute_id = %d AND %s.store_id = %d\n",
 				table, storeAlias, storeAlias, storeAlias, meta.AttributeID, storeAlias, storeID,
 			)
 			selectCols = append(selectCols, fmt.Sprintf("COALESCE(%s.value, %s.value) as %s", storeAlias, defaultAlias, attr.alias))
@@ -260,13 +260,13 @@ func (r *ProductRepository) FindMatchingEntityIDs(ctx context.Context, storeID i
 		}
 		defaultAlias := attr.alias + "_d"
 		fmt.Fprintf(&joinBuilder,
-			"LEFT JOIN %s %s ON cpe.row_id = %s.row_id AND %s.attribute_id = %d AND %s.store_id = 0\n",
+			"LEFT JOIN %s %s ON cpe.entity_id = %s.entity_id AND %s.attribute_id = %d AND %s.store_id = 0\n",
 			table, defaultAlias, defaultAlias, defaultAlias, meta.AttributeID, defaultAlias,
 		)
 		if storeID > 0 {
 			storeAlias := attr.alias + "_s"
 			fmt.Fprintf(&joinBuilder,
-				"LEFT JOIN %s %s ON cpe.row_id = %s.row_id AND %s.attribute_id = %d AND %s.store_id = %d\n",
+				"LEFT JOIN %s %s ON cpe.entity_id = %s.entity_id AND %s.attribute_id = %d AND %s.store_id = %d\n",
 				table, storeAlias, storeAlias, storeAlias, meta.AttributeID, storeAlias, storeID,
 			)
 		}
@@ -387,7 +387,7 @@ func (r *ProductRepository) buildFilterConditions(storeID int, search *string, f
 			conditions = append(conditions, `cpe.entity_id IN (
 				SELECT ccp.product_id FROM catalog_category_product ccp
 				JOIN catalog_category_entity cce ON ccp.category_id = cce.entity_id
-				JOIN catalog_category_entity_varchar ccev ON cce.row_id = ccev.row_id
+				JOIN catalog_category_entity_varchar ccev ON cce.entity_id = ccev.entity_id
 					AND ccev.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'url_path' AND entity_type_id = 3)
 					AND ccev.store_id = 0
 				WHERE ccev.value = ?

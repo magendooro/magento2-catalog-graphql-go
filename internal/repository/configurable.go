@@ -284,7 +284,7 @@ func (r *ConfigurableRepository) GetChildAttributeValues(ctx context.Context, ch
 
 	query := `SELECT cpe.entity_id, cpei.attribute_id, cpei.value
 		FROM catalog_product_entity_int cpei
-		JOIN catalog_product_entity cpe ON cpei.row_id = cpe.row_id
+		JOIN catalog_product_entity cpe ON cpei.entity_id = cpe.entity_id
 		WHERE cpe.entity_id IN (` + strings.Join(childPlaceholders, ",") + `)
 		AND cpei.attribute_id IN (` + strings.Join(attrPlaceholders, ",") + `)
 		AND cpei.store_id = 0`
@@ -321,7 +321,7 @@ func (r *ConfigurableRepository) GetChildProductsEAV(ctx context.Context, childE
 
 	// Build SELECT columns
 	selectCols := []string{
-		"cpe.entity_id", "cpe.row_id", "cpe.sku", "cpe.type_id", "cpe.attribute_set_id",
+		"cpe.entity_id", "cpe.entity_id", "cpe.sku", "cpe.type_id", "cpe.attribute_set_id",
 		"cpe.created_at", "cpe.updated_at",
 	}
 
@@ -343,14 +343,14 @@ func (r *ConfigurableRepository) GetChildProductsEAV(ctx context.Context, childE
 
 		defaultAlias := attr.alias + "_d"
 		fmt.Fprintf(&joinBuilder,
-			"LEFT JOIN %s %s ON cpe.row_id = %s.row_id AND %s.attribute_id = %d AND %s.store_id = 0\n",
+			"LEFT JOIN %s %s ON cpe.entity_id = %s.entity_id AND %s.attribute_id = %d AND %s.store_id = 0\n",
 			table, defaultAlias, defaultAlias, defaultAlias, meta.AttributeID, defaultAlias,
 		)
 
 		if storeID > 0 {
 			storeAlias := attr.alias + "_s"
 			fmt.Fprintf(&joinBuilder,
-				"LEFT JOIN %s %s ON cpe.row_id = %s.row_id AND %s.attribute_id = %d AND %s.store_id = %d\n",
+				"LEFT JOIN %s %s ON cpe.entity_id = %s.entity_id AND %s.attribute_id = %d AND %s.store_id = %d\n",
 				table, storeAlias, storeAlias, storeAlias, meta.AttributeID, storeAlias, storeID,
 			)
 			selectCols = append(selectCols, fmt.Sprintf("COALESCE(%s.value, %s.value) as %s", storeAlias, defaultAlias, attr.alias))
