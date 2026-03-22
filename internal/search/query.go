@@ -2,11 +2,11 @@ package search
 
 // Query represents an OpenSearch/Elasticsearch search query.
 type Query struct {
-	Query        boolWrapper                `json:"query"`
-	From         int                        `json:"from"`
-	Size         int                        `json:"size"`
-	Sort         []map[string]interface{}   `json:"sort,omitempty"`
-	StoredFields string                     `json:"stored_fields,omitempty"`
+	Query        boolWrapper              `json:"query"`
+	From         int                      `json:"from"`
+	Size         int                      `json:"size"`
+	Sort         []map[string]interface{} `json:"sort,omitempty"`
+	Source       bool                     `json:"_source"`
 }
 
 type boolWrapper struct {
@@ -28,9 +28,9 @@ type boolQuery struct {
 //   - filter on status=1 and visibility IN (2,3,4)
 func ProductSearchQuery(searchTerm string, from, size int) *Query {
 	q := &Query{
-		From:         from,
-		Size:         size,
-		StoredFields: "_none_",
+		From:   from,
+		Size:   size,
+		Source: false, // Only need _id and _score from hits
 	}
 
 	// Should clauses: match _search, match sku, match_phrase_prefix name
