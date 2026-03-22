@@ -564,7 +564,10 @@ func (s *ProductService) loadConfigurableData(ctx context.Context, parentEntityI
 
 	// 1. Load super attributes (which attributes are configurable for each parent)
 	superAttrs, err := s.configurableRepo.GetSuperAttributesForProducts(ctx, parentEntityIDs, storeID)
-	if err != nil || len(superAttrs) == 0 {
+	if err != nil {
+		return result
+	}
+	if len(superAttrs) == 0 {
 		return result
 	}
 

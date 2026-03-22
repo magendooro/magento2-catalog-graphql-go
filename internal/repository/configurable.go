@@ -138,7 +138,7 @@ func (r *ConfigurableRepository) GetSuperLinksForProducts(ctx context.Context, p
 
 	query := `SELECT parent_id, product_id FROM catalog_product_super_link
 		WHERE parent_id IN (` + strings.Join(placeholders, ",") + `)
-		ORDER BY parent_id, position`
+		ORDER BY parent_id, link_id`
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {

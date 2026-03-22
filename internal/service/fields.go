@@ -41,8 +41,10 @@ func CollectRequestedFields(ctx context.Context) *RequestedFields {
 		case "suggestions":
 			rf.Suggestions = true
 		case "items":
-			// Inspect item-level fields
-			for _, itemField := range graphql.CollectFields(graphql.GetOperationContext(ctx), pf.Selections, nil) {
+			// Inspect item-level fields — include all product type fragments so
+			// ... on ConfigurableProduct { configurable_options } is collected
+			productTypes := []string{"SimpleProduct", "ConfigurableProduct", "BundleProduct", "VirtualProduct", "GroupedProduct"}
+			for _, itemField := range graphql.CollectFields(graphql.GetOperationContext(ctx), pf.Selections, productTypes) {
 				switch itemField.Name {
 				case "price_range":
 					rf.PriceRange = true
