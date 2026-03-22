@@ -102,13 +102,21 @@ func (r *MediaRepository) GetMediaForProducts(ctx context.Context, rowIDs []int,
 
 // BuildMediaGallery converts MediaGalleryData to GraphQL types.
 // labelFallback is used when the media item has no label (Magento uses product name).
+// ImageCacheHash is the Magento image cache hash from /media/catalog/product/cache/{hash}/.
+// Set via MEDIA_CACHE_HASH env var. When empty, raw paths are returned.
+var ImageCacheHash string
+
 func BuildMediaGallery(items []*MediaGalleryData, baseURL string, labelFallback *string) []model.MediaGalleryInterface {
 	if len(items) == 0 {
 		return nil
 	}
 	result := make([]model.MediaGalleryInterface, 0, len(items))
 	for _, m := range items {
-		url := baseURL + m.File
+		filePath := m.File
+		if ImageCacheHash != "" {
+			filePath = "/cache/" + ImageCacheHash + m.File
+		}
+		url := baseURL + filePath
 		pos := 0
 		if m.Position != nil {
 			pos = *m.Position

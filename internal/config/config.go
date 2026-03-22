@@ -47,7 +47,8 @@ type GraphQLConfig struct {
 }
 
 type MediaConfig struct {
-	BaseURL string `mapstructure:"base_url"`
+	BaseURL   string `mapstructure:"base_url"`
+	CacheHash string `mapstructure:"cache_hash"`
 }
 
 type LoggingConfig struct {
@@ -98,6 +99,7 @@ func Load() (*Config, error) {
 	viper.BindEnv("redis.db", "REDIS_DB")
 	viper.BindEnv("server.port", "SERVER_PORT", "PORT")
 	viper.BindEnv("media.base_url", "MEDIA_BASE_URL")
+	viper.BindEnv("media.cache_hash", "MEDIA_CACHE_HASH")
 	viper.BindEnv("logging.level", "LOG_LEVEL")
 	viper.BindEnv("logging.pretty", "LOG_PRETTY")
 

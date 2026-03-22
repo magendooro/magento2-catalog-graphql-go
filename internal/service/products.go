@@ -606,7 +606,11 @@ func toProductImage(path *string, baseURL string, labelFallback *string) *model.
 	if path == nil || *path == "" || *path == "no_selection" {
 		return nil
 	}
-	url := baseURL + *path
+	filePath := *path
+	if repository.ImageCacheHash != "" {
+		filePath = "/cache/" + repository.ImageCacheHash + *path
+	}
+	url := baseURL + filePath
 	return &model.ProductImage{URL: &url, Label: labelFallback}
 }
 
