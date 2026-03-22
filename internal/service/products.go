@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"sort"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -334,6 +335,13 @@ func (s *ProductService) mapProductToModel(
 		if configData != nil {
 			variants = configData.variants[p.EntityID]
 			configOptions = configData.options[p.EntityID]
+			// Sort by attribute_code to match Magento's alphabetical ordering
+			sort.Slice(configOptions, func(i, j int) bool {
+				ai, aj := "", ""
+				if configOptions[i].AttributeCode != nil { ai = *configOptions[i].AttributeCode }
+				if configOptions[j].AttributeCode != nil { aj = *configOptions[j].AttributeCode }
+				return ai < aj
+			})
 		}
 		return base.toConfigurableProduct(variants, configOptions)
 	case "virtual":
