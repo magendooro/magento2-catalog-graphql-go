@@ -14,6 +14,7 @@ import (
 	"github.com/magendooro/magento2-catalog-graphql-go/internal/config"
 	"github.com/magendooro/magento2-catalog-graphql-go/internal/middleware"
 	"github.com/magendooro/magento2-catalog-graphql-go/internal/repository"
+	"github.com/magendooro/magento2-catalog-graphql-go/internal/search"
 )
 
 type ProductService struct {
@@ -31,6 +32,10 @@ type ProductService struct {
 	searchRepo       *repository.SearchRepository
 	storeConfig      *repository.StoreConfigRepository
 	cfg              *config.Config
+	searchClient     interface {
+		Available() bool
+		Search(ctx context.Context, query *search.Query) ([]int, int, error)
+	}
 }
 
 func NewProductService(
@@ -64,6 +69,7 @@ func NewProductService(
 		searchRepo:       searchRepo,
 		storeConfig:      storeConfig,
 		cfg:              cfg,
+		searchClient:     nil,
 	}
 }
 
@@ -77,8 +83,36 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 		currentPage = 1
 	}
 
-	// 1. Get base product data with EAV attributes (also returns all matching IDs for aggregation reuse)
-	products, totalCount, allMatchingIDs, err := s.productRepo.FindProducts(ctx, storeID, search, filter, sort, pageSize, currentPage)
+	// 1. Try OpenSearch for search queries; fall back to MySQL
+	var searchEntityIDs []int
+	var esTotal int
+	useES := search != nil && *search != "" && s.searchClient != nil && s.searchClient.Available()
+
+	if useES {
+		esQuery := s.buildESQuery(*search, filter, sort, pageSize, currentPage)
+		var err error
+		searchEntityIDs, esTotal, err = s.searchClient.Search(ctx, esQuery)
+		if err != nil {
+			log.Warn().Err(err).Str("search", *search).Msg("OpenSearch failed, falling back to MySQL")
+			useES = false
+		}
+	}
+
+	var products []*repository.ProductEAVValues
+	var totalCount int
+	var allMatchingIDs []int
+	var err error
+
+	if useES && len(searchEntityIDs) > 0 {
+		// Fetch product data from MySQL for the ES-returned entity IDs (preserving relevance order)
+		products, totalCount, allMatchingIDs, err = s.productRepo.FindProductsByIDs(ctx, storeID, searchEntityIDs, esTotal)
+	} else if useES && len(searchEntityIDs) == 0 {
+		totalCount = esTotal // 0
+		allMatchingIDs = nil
+	} else {
+		// MySQL-only path (original behavior)
+		products, totalCount, allMatchingIDs, err = s.productRepo.FindProducts(ctx, storeID, search, filter, sort, pageSize, currentPage)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -1204,4 +1238,38 @@ func parseCurrency(code string) model.CurrencyEnum {
 	default:
 		return model.CurrencyEnum(code)
 	}
+}
+
+// SetSearchClient sets the OpenSearch/Elasticsearch client for full-text search.
+func (s *ProductService) SetSearchClient(client *search.Client) {
+	s.searchClient = client
+}
+
+// buildESQuery constructs an OpenSearch query from GraphQL parameters.
+func (s *ProductService) buildESQuery(searchTerm string, filter *model.ProductAttributeFilterInput, sortInput *model.ProductAttributeSortInput, pageSize, currentPage int) *search.Query {
+	from := (currentPage - 1) * pageSize
+	q := search.ProductSearchQuery(searchTerm, from, pageSize)
+
+	if filter != nil {
+		if filter.CategoryID != nil && filter.CategoryID.Eq != nil {
+			var catID int
+			fmt.Sscanf(*filter.CategoryID.Eq, "%d", &catID)
+			if catID > 0 {
+				q.AddCategoryFilter(catID)
+			}
+		}
+		if filter.Price != nil {
+			q.AddPriceFilter(filter.Price.From, filter.Price.To)
+		}
+	}
+
+	if sortInput != nil {
+		if sortInput.Name != nil {
+			q.SetSort("name", string(*sortInput.Name))
+		} else if sortInput.Price != nil {
+			q.SetSort("price", string(*sortInput.Price))
+		}
+	}
+
+	return q
 }

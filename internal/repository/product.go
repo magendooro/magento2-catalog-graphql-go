@@ -228,6 +228,101 @@ func (r *ProductRepository) FindProducts(ctx context.Context, storeID int, searc
 	return products, totalCount, allMatchingIDs, nil
 }
 
+// FindProductsByIDs fetches products by a specific list of entity_ids, preserving the input order.
+// Used when OpenSearch provides entity_ids in relevance order.
+func (r *ProductRepository) FindProductsByIDs(ctx context.Context, storeID int, entityIDs []int, totalCount int) ([]*ProductEAVValues, int, []int, error) {
+	if len(entityIDs) == 0 {
+		return nil, totalCount, nil, nil
+	}
+
+	// Build SELECT columns (same as FindProducts)
+	selectCols := []string{
+		"cpe.entity_id", "cpe.entity_id", "cpe.sku", "cpe.type_id", "cpe.attribute_set_id",
+		"cpe.created_at", "cpe.updated_at",
+	}
+
+	var joinBuilder strings.Builder
+	joinBuilder.WriteString("FROM catalog_product_entity cpe\n")
+
+	for _, attr := range coreEAVAttributes {
+		meta := r.attrRepo.Get(attr.code)
+		if meta == nil {
+			selectCols = append(selectCols, "NULL as "+attr.alias)
+			continue
+		}
+
+		table := TableForType(meta.BackendType)
+		if table == "" {
+			selectCols = append(selectCols, "NULL as "+attr.alias)
+			continue
+		}
+
+		defaultAlias := attr.alias + "_d"
+		fmt.Fprintf(&joinBuilder,
+			"LEFT JOIN %s %s ON cpe.entity_id = %s.entity_id AND %s.attribute_id = %d AND %s.store_id = 0\n",
+			table, defaultAlias, defaultAlias, defaultAlias, meta.AttributeID, defaultAlias,
+		)
+
+		if storeID > 0 {
+			storeAlias := attr.alias + "_s"
+			fmt.Fprintf(&joinBuilder,
+				"LEFT JOIN %s %s ON cpe.entity_id = %s.entity_id AND %s.attribute_id = %d AND %s.store_id = %d\n",
+				table, storeAlias, storeAlias, storeAlias, meta.AttributeID, storeAlias, storeID,
+			)
+			selectCols = append(selectCols, fmt.Sprintf("COALESCE(%s.value, %s.value) as %s", storeAlias, defaultAlias, attr.alias))
+		} else {
+			selectCols = append(selectCols, fmt.Sprintf("%s.value as %s", defaultAlias, attr.alias))
+		}
+	}
+
+	// Build placeholders and ORDER BY FIELD to preserve ES relevance order
+	placeholders := make([]string, len(entityIDs))
+	args := make([]interface{}, 0, len(entityIDs)*2)
+	for i, id := range entityIDs {
+		placeholders[i] = "?"
+		args = append(args, id)
+	}
+
+	whereClause := fmt.Sprintf("WHERE cpe.entity_id IN (%s)", strings.Join(placeholders, ","))
+	orderClause := "ORDER BY FIELD(cpe.entity_id, " + strings.Join(placeholders, ",") + ")"
+	// Add entity IDs again for the FIELD() function
+	for _, id := range entityIDs {
+		args = append(args, id)
+	}
+
+	query := "SELECT " + strings.Join(selectCols, ", ") + "\n" + joinBuilder.String() + "\n" + whereClause + "\n" + orderClause
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, 0, nil, fmt.Errorf("find products by IDs: %w", err)
+	}
+	defer rows.Close()
+
+	var products []*ProductEAVValues
+	for rows.Next() {
+		p := &ProductEAVValues{}
+		err := rows.Scan(
+			&p.EntityID, &p.RowID, &p.SKU, &p.TypeID, &p.AttributeSetID,
+			&p.CreatedAt, &p.UpdatedAt,
+			&p.Name, &p.Description, &p.ShortDescription,
+			&p.URLKey, &p.MetaTitle, &p.MetaKeyword, &p.MetaDescription,
+			&p.Image, &p.SmallImage, &p.Thumbnail,
+			&p.SpecialPrice, &p.SpecialFromDate, &p.SpecialToDate,
+			&p.NewFromDate, &p.NewToDate,
+			&p.Weight, &p.Status, &p.Visibility,
+			&p.Manufacturer, &p.CountryOfMfg,
+			&p.OptionsContainer, &p.GiftMsgAvail,
+			&p.SwatchImage,
+		)
+		if err != nil {
+			return nil, 0, nil, fmt.Errorf("scan product by ID: %w", err)
+		}
+		products = append(products, p)
+	}
+
+	return products, totalCount, entityIDs, rows.Err()
+}
+
 // FindMatchingEntityIDs returns all entity IDs matching the given filter (no pagination).
 // Used for aggregation context.
 func (r *ProductRepository) FindMatchingEntityIDs(ctx context.Context, storeID int, search *string, filter *model.ProductAttributeFilterInput) ([]int, error) {

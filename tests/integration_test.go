@@ -32,8 +32,8 @@ func TestMain(m *testing.M) {
 		Database: config.DatabaseConfig{
 			Host:         host,
 			Port:         envOrDefault("TEST_DB_PORT", "3306"),
-			User:         envOrDefault("TEST_DB_USER", "fch"),
-			Password:     envOrDefault("TEST_DB_PASSWORD", ""),
+			User:         envOrDefault("TEST_DB_USER", "magento_go"),
+			Password:     envOrDefault("TEST_DB_PASSWORD", "magento_go"),
 			Name:         envOrDefault("TEST_DB_NAME", "magento248"),
 			MaxOpenConns: 5,
 			MaxIdleConns: 2,
