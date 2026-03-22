@@ -163,7 +163,7 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 	}
 
 	// 2. Load store config
-	storeCfg := s.storeConfig.Get(ctx, storeID)
+	storeCfg := s.storeConfig.Get(storeID)
 	currency := parseCurrency(storeCfg.BaseCurrency)
 
 	// 3. Batch load only the data the client requested (parallel)

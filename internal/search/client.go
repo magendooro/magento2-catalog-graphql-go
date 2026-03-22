@@ -5,7 +5,6 @@ package search
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -32,10 +31,10 @@ type Config struct {
 	StoreID     int
 }
 
-// NewClient creates a search client from Magento's core_config_data.
+// NewClient creates a search client from Magento's config.
 // Returns nil if the search engine is not configured or unavailable.
-func NewClient(db *sql.DB) *Client {
-	cfg := loadConfig(db)
+func NewClient(cp ConfigReader) *Client {
+	cfg := loadConfigFromProvider(cp)
 	if cfg.Engine == "mysql" || cfg.Engine == "" {
 		log.Info().Msg("search engine: MySQL (no OpenSearch/Elasticsearch configured)")
 		return nil
@@ -217,7 +216,12 @@ type searchResponseWithAggs struct {
 	Aggregations map[string]json.RawMessage `json:"aggregations"`
 }
 
-func loadConfig(db *sql.DB) Config {
+// ConfigReader is the interface needed from the config provider.
+type ConfigReader interface {
+	GetDefault(path string) string
+}
+
+func loadConfigFromProvider(cp ConfigReader) Config {
 	cfg := Config{
 		Engine:      "mysql",
 		Host:        "localhost",
@@ -226,24 +230,31 @@ func loadConfig(db *sql.DB) Config {
 		StoreID:     1,
 	}
 
-	var engine string
-	db.QueryRow("SELECT value FROM core_config_data WHERE path = 'catalog/search/engine' AND scope = 'default'").Scan(&engine)
+	engine := cp.GetDefault("catalog/search/engine")
 
 	switch engine {
 	case "opensearch":
 		cfg.Engine = "opensearch"
-		db.QueryRow("SELECT value FROM core_config_data WHERE path = 'catalog/search/opensearch_server_hostname' AND scope = 'default'").Scan(&cfg.Host)
-		db.QueryRow("SELECT value FROM core_config_data WHERE path = 'catalog/search/opensearch_server_port' AND scope = 'default'").Scan(&cfg.Port)
-		db.QueryRow("SELECT value FROM core_config_data WHERE path = 'catalog/search/opensearch_index_prefix' AND scope = 'default'").Scan(&cfg.IndexPrefix)
+		if v := cp.GetDefault("catalog/search/opensearch_server_hostname"); v != "" {
+			cfg.Host = v
+		}
+		if v := cp.GetDefault("catalog/search/opensearch_server_port"); v != "" {
+			cfg.Port = v
+		}
+		if v := cp.GetDefault("catalog/search/opensearch_index_prefix"); v != "" {
+			cfg.IndexPrefix = v
+		}
 	case "elasticsearch7", "elasticsearch":
 		cfg.Engine = engine
-		db.QueryRow("SELECT value FROM core_config_data WHERE path = 'catalog/search/elasticsearch7_server_hostname' AND scope = 'default'").Scan(&cfg.Host)
-		db.QueryRow("SELECT value FROM core_config_data WHERE path = 'catalog/search/elasticsearch7_server_port' AND scope = 'default'").Scan(&cfg.Port)
-		db.QueryRow("SELECT value FROM core_config_data WHERE path = 'catalog/search/elasticsearch7_index_prefix' AND scope = 'default'").Scan(&cfg.IndexPrefix)
-	}
-
-	if cfg.IndexPrefix == "" {
-		cfg.IndexPrefix = "magento2"
+		if v := cp.GetDefault("catalog/search/elasticsearch7_server_hostname"); v != "" {
+			cfg.Host = v
+		}
+		if v := cp.GetDefault("catalog/search/elasticsearch7_server_port"); v != "" {
+			cfg.Port = v
+		}
+		if v := cp.GetDefault("catalog/search/elasticsearch7_index_prefix"); v != "" {
+			cfg.IndexPrefix = v
+		}
 	}
 
 	return cfg
