@@ -103,7 +103,7 @@ func (a *App) Run() error {
 
 	// Catalog caches all GraphQL responses — no auth, no mutations
 	var h http.Handler = mux
-	h = middleware.CacheMiddleware(a.cache, middleware.CacheOptions{})(h)
+	h = middleware.CacheMiddleware(a.cache, middleware.CacheOptions{SkipMutations: true})(h)
 	h = middleware.StoreMiddleware(storeResolver)(h)
 	h = middleware.LoggingMiddleware(h)
 	h = middleware.CORSMiddleware(h)
