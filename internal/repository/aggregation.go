@@ -263,16 +263,25 @@ func (r *AggregationRepository) GetPriceAggregation(ctx context.Context, matchin
 }
 
 // GetCategoryAggregation computes category aggregation for products.
-func (r *AggregationRepository) GetCategoryAggregation(ctx context.Context, matchingEntityIDs []int, storeID int) (*AggregationBucket, error) {
+// scopeCategoryID, when > 0, restricts results to categories that are descendants of that
+// category (path LIKE '{scope_path}/%'). This prevents cross-tree categories such as
+// Collections/Eco Friendly from appearing when browsing Men or Women.
+func (r *AggregationRepository) GetCategoryAggregation(ctx context.Context, matchingEntityIDs []int, storeID, scopeCategoryID int) (*AggregationBucket, error) {
 	if len(matchingEntityIDs) == 0 {
 		return nil, nil
 	}
 
 	placeholders := make([]string, len(matchingEntityIDs))
-	args := make([]interface{}, len(matchingEntityIDs))
+	args := make([]interface{}, 0, len(matchingEntityIDs)+1)
 	for i, id := range matchingEntityIDs {
 		placeholders[i] = "?"
-		args[i] = id
+		args = append(args, id)
+	}
+
+	scopeClause := ""
+	if scopeCategoryID > 0 {
+		scopeClause = "AND cce.path LIKE CONCAT((SELECT path FROM catalog_category_entity WHERE entity_id = ?), '/%')"
+		args = append(args, scopeCategoryID)
 	}
 
 	query := fmt.Sprintf(`SELECT ccp.category_id,
@@ -286,6 +295,7 @@ func (r *AggregationRepository) GetCategoryAggregation(ctx context.Context, matc
 			AND ccevn_s.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'name' AND entity_type_id = 3) AND ccevn_s.store_id = %d
 		WHERE ccp.product_id IN (`+strings.Join(placeholders, ",")+`)
 		AND cce.level > 1
+		`+scopeClause+`
 		GROUP BY ccp.category_id, label
 		HAVING cnt > 0
 		ORDER BY cnt DESC`, storeID)
