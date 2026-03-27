@@ -47,6 +47,13 @@ func (s *CategoryService) GetCategories(ctx context.Context, filters *model.Cate
 	items := make([]*model.CategoryTree, 0, len(cats))
 	for _, c := range cats {
 		tree := repository.BuildCategoryTree(c, storeCfg.CategoryURLSuffix)
+		children, err := s.categoryRepo.GetChildCategories(ctx, c.EntityID, storeID)
+		if err != nil {
+			return nil, err
+		}
+		for _, child := range children {
+			tree.Children = append(tree.Children, repository.BuildCategoryTree(child, storeCfg.CategoryURLSuffix))
+		}
 		items = append(items, tree)
 	}
 
