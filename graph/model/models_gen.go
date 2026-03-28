@@ -470,8 +470,24 @@ func (this BundleProduct) GetRelativeURL() *string            { return this.Rela
 func (this BundleProduct) GetRedirectCode() int               { return this.RedirectCode }
 func (this BundleProduct) GetType() *URLRewriteEntityTypeEnum { return this.Type }
 
+type CategoryFilterInput struct {
+	Ids               *FilterEqualTypeInput `json:"ids,omitempty"`
+	Name              *FilterMatchTypeInput `json:"name,omitempty"`
+	ParentID          *FilterEqualTypeInput `json:"parent_id,omitempty"`
+	URLKey            *FilterEqualTypeInput `json:"url_key,omitempty"`
+	URLPath           *FilterEqualTypeInput `json:"url_path,omitempty"`
+	CategoryUID       *FilterEqualTypeInput `json:"category_uid,omitempty"`
+	ParentCategoryUID *FilterEqualTypeInput `json:"parent_category_uid,omitempty"`
+}
+
 type CategoryProducts struct {
 	Items      []ProductInterface    `json:"items,omitempty"`
+	PageInfo   *SearchResultPageInfo `json:"page_info,omitempty"`
+	TotalCount *int                  `json:"total_count,omitempty"`
+}
+
+type CategoryResult struct {
+	Items      []*CategoryTree       `json:"items,omitempty"`
 	PageInfo   *SearchResultPageInfo `json:"page_info,omitempty"`
 	TotalCount *int                  `json:"total_count,omitempty"`
 }

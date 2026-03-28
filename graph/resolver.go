@@ -14,7 +14,8 @@ import (
 
 // Resolver is the root resolver. It holds dependencies shared across all resolvers.
 type Resolver struct {
-	ProductService *service.ProductService
+	ProductService  *service.ProductService
+	CategoryService *service.CategoryService
 }
 
 func NewResolver(db *sql.DB, cfg *localconfig.Config) (*Resolver, error) {
@@ -52,7 +53,10 @@ func NewResolver(db *sql.DB, cfg *localconfig.Config) (*Resolver, error) {
 		productService.SetSearchClient(searchClient)
 	}
 
+	categoryService := service.NewCategoryService(categoryRepo, storeConfigRepo)
+
 	return &Resolver{
-		ProductService: productService,
+		ProductService:  productService,
+		CategoryService: categoryService,
 	}, nil
 }

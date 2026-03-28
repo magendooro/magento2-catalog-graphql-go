@@ -11,6 +11,16 @@ type Query {
         currentPage: Int = 1
         sort: ProductAttributeSortInput
     ): Products
+    """Return a category tree, filtered by its IDs, url_key, url_path, or other attributes."""
+    categories(
+        filters: CategoryFilterInput
+        pageSize: Int = 20
+        currentPage: Int = 1
+    ): CategoryResult
+    """Deprecated: use categories instead."""
+    categoryList(filters: CategoryFilterInput): [CategoryTree]
+    """Deprecated: use categories instead."""
+    category(id: Int): CategoryTree
 }
 
 # =============================================================================
@@ -844,6 +854,26 @@ type ProductLink {
     linked_product_sku: String
     linked_product_type: String
     position: Int
+}
+
+# =============================================================================
+# Category Filter / Result
+# =============================================================================
+
+input CategoryFilterInput {
+    ids: FilterEqualTypeInput
+    name: FilterMatchTypeInput
+    parent_id: FilterEqualTypeInput
+    url_key: FilterEqualTypeInput
+    url_path: FilterEqualTypeInput
+    category_uid: FilterEqualTypeInput
+    parent_category_uid: FilterEqualTypeInput
+}
+
+type CategoryResult {
+    items: [CategoryTree]
+    page_info: SearchResultPageInfo
+    total_count: Int
 }
 
 # =============================================================================

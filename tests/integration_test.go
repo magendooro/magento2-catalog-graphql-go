@@ -656,3 +656,210 @@ func TestHealthEndpoint(t *testing.T) {
 		t.Error("expected at least 1 product in database")
 	}
 }
+
+// ─── categories ──────────────────────────────────────────────────────────────
+
+func TestDirectory_Categories_ReturnsNonEmpty(t *testing.T) {
+	result := graphqlRequest(t, `{
+		categories {
+			items {
+				id
+				uid
+				name
+				url_key
+				url_path
+				level
+				path
+			}
+			page_info {
+				page_size
+				current_page
+				total_pages
+			}
+			total_count
+		}
+	}`, "default")
+
+	data := result["data"].(map[string]interface{})
+	cats := data["categories"].(map[string]interface{})
+
+	items, ok := cats["items"].([]interface{})
+	if !ok || len(items) == 0 {
+		t.Fatal("categories returned no items")
+	}
+
+	tc, ok := cats["total_count"].(float64)
+	if !ok || tc == 0 {
+		t.Error("categories total_count is 0")
+	}
+
+	// Verify each item has required fields
+	for i, item := range items {
+		m := item.(map[string]interface{})
+		if m["name"] == nil {
+			t.Errorf("item[%d].name is nil", i)
+		}
+		if m["id"] == nil {
+			t.Errorf("item[%d].id is nil", i)
+		}
+	}
+}
+
+func TestDirectory_Categories_FilterByParentID(t *testing.T) {
+	// Level-2 categories have parent_id=2 (Default Category)
+	result := graphqlRequest(t, `{
+		categories(filters: {parent_id: {eq: "2"}}) {
+			items {
+				id
+				name
+				level
+				url_key
+			}
+			total_count
+		}
+	}`, "default")
+
+	data := result["data"].(map[string]interface{})
+	cats := data["categories"].(map[string]interface{})
+
+	items, ok := cats["items"].([]interface{})
+	if !ok || len(items) == 0 {
+		t.Fatal("categories(parent_id=2) returned no items")
+	}
+	for i, item := range items {
+		m := item.(map[string]interface{})
+		level, _ := m["level"].(float64)
+		if level != 2 {
+			t.Errorf("item[%d] expected level=2, got %v", i, level)
+		}
+	}
+}
+
+func TestDirectory_Categories_FilterByURLKey(t *testing.T) {
+	result := graphqlRequest(t, `{
+		categories(filters: {url_key: {eq: "gear"}}) {
+			items {
+				id
+				name
+				url_key
+				url_path
+				children {
+					id
+					name
+					url_key
+				}
+			}
+			total_count
+		}
+	}`, "default")
+
+	data := result["data"].(map[string]interface{})
+	cats := data["categories"].(map[string]interface{})
+	items, ok := cats["items"].([]interface{})
+	if !ok || len(items) == 0 {
+		t.Fatal("categories(url_key=gear) returned no items")
+	}
+	m := items[0].(map[string]interface{})
+	if m["url_key"] != "gear" {
+		t.Errorf("expected url_key=gear, got %v", m["url_key"])
+	}
+}
+
+func TestDirectory_CategoryList_ReturnsItems(t *testing.T) {
+	result := graphqlRequest(t, `{
+		categoryList(filters: {parent_id: {eq: "2"}}) {
+			id
+			name
+			url_key
+			level
+			children {
+				id
+				name
+				url_key
+			}
+		}
+	}`, "default")
+
+	data := result["data"].(map[string]interface{})
+	list, ok := data["categoryList"].([]interface{})
+	if !ok || len(list) == 0 {
+		t.Fatal("categoryList returned no items")
+	}
+	for i, item := range list {
+		m := item.(map[string]interface{})
+		if m["name"] == nil {
+			t.Errorf("categoryList[%d].name is nil", i)
+		}
+	}
+}
+
+func TestDirectory_Category_ByID(t *testing.T) {
+	// Category ID 3 = "Gear" in Magento sample data
+	result := graphqlRequest(t, `{
+		category(id: 3) {
+			id
+			name
+			url_key
+			url_path
+			level
+			children {
+				id
+				name
+				url_key
+			}
+		}
+	}`, "default")
+
+	data := result["data"].(map[string]interface{})
+	cat, ok := data["category"].(map[string]interface{})
+	if !ok || cat == nil {
+		t.Fatal("category(id: 3) returned null")
+	}
+	if cat["name"] == nil {
+		t.Error("category.name is nil")
+	}
+	id, _ := cat["id"].(float64)
+	if int(id) != 3 {
+		t.Errorf("expected id=3, got %v", id)
+	}
+}
+
+func TestDirectory_Category_NotFound_ReturnsNull(t *testing.T) {
+	result := graphqlRequest(t, `{
+		category(id: 99999) {
+			id
+			name
+		}
+	}`, "default")
+
+	data := result["data"].(map[string]interface{})
+	if data["category"] != nil {
+		t.Errorf("expected null for unknown category, got %v", data["category"])
+	}
+}
+
+func TestDirectory_Categories_Pagination(t *testing.T) {
+	result := graphqlRequest(t, `{
+		categories(pageSize: 3, currentPage: 1) {
+			items { id name }
+			page_info {
+				page_size
+				current_page
+				total_pages
+			}
+			total_count
+		}
+	}`, "default")
+
+	data := result["data"].(map[string]interface{})
+	cats := data["categories"].(map[string]interface{})
+	items := cats["items"].([]interface{})
+	if len(items) > 3 {
+		t.Errorf("pageSize=3 but got %d items", len(items))
+	}
+	pageInfo := cats["page_info"].(map[string]interface{})
+	pageSize, _ := pageInfo["page_size"].(float64)
+	if int(pageSize) != 3 {
+		t.Errorf("expected page_size=3, got %v", pageSize)
+	}
+}

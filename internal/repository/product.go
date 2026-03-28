@@ -450,31 +450,43 @@ func (r *ProductRepository) buildFilterConditions(storeID int, search *string, f
 	}
 	if filter.CategoryID != nil {
 		if filter.CategoryID.Eq != nil {
-			conditions = append(conditions, "cpe.entity_id IN (SELECT product_id FROM catalog_category_product WHERE category_id = ?)")
-			args = append(args, *filter.CategoryID.Eq)
+			sql, sqlArgs := categoryHierarchySQL([]string{*filter.CategoryID.Eq})
+			conditions = append(conditions, sql)
+			args = append(args, sqlArgs...)
 		}
 		if len(filter.CategoryID.In) > 0 {
-			placeholders := make([]string, len(filter.CategoryID.In))
-			for i, v := range filter.CategoryID.In {
-				placeholders[i] = "?"
-				args = append(args, *v)
+			vals := make([]string, 0, len(filter.CategoryID.In))
+			for _, v := range filter.CategoryID.In {
+				if v != nil {
+					vals = append(vals, *v)
+				}
 			}
-			conditions = append(conditions, "cpe.entity_id IN (SELECT product_id FROM catalog_category_product WHERE category_id IN ("+strings.Join(placeholders, ",")+"))")
+			if len(vals) > 0 {
+				sql, sqlArgs := categoryHierarchySQL(vals)
+				conditions = append(conditions, sql)
+				args = append(args, sqlArgs...)
+			}
 		}
 	}
 	if filter.CategoryUID != nil {
 		if filter.CategoryUID.Eq != nil {
 			catID := decodeMagentoUID(*filter.CategoryUID.Eq)
-			conditions = append(conditions, "cpe.entity_id IN (SELECT product_id FROM catalog_category_product WHERE category_id = ?)")
-			args = append(args, catID)
+			sql, sqlArgs := categoryHierarchySQL([]string{fmt.Sprintf("%d", catID)})
+			conditions = append(conditions, sql)
+			args = append(args, sqlArgs...)
 		}
 		if len(filter.CategoryUID.In) > 0 {
-			placeholders := make([]string, len(filter.CategoryUID.In))
-			for i, v := range filter.CategoryUID.In {
-				placeholders[i] = "?"
-				args = append(args, decodeMagentoUID(*v))
+			vals := make([]string, 0, len(filter.CategoryUID.In))
+			for _, v := range filter.CategoryUID.In {
+				if v != nil {
+					vals = append(vals, fmt.Sprintf("%d", decodeMagentoUID(*v)))
+				}
 			}
-			conditions = append(conditions, "cpe.entity_id IN (SELECT product_id FROM catalog_category_product WHERE category_id IN ("+strings.Join(placeholders, ",")+"))")
+			if len(vals) > 0 {
+				sql, sqlArgs := categoryHierarchySQL(vals)
+				conditions = append(conditions, sql)
+				args = append(args, sqlArgs...)
+			}
 		}
 	}
 	if filter.CategoryURLPath != nil {
@@ -561,6 +573,42 @@ func (r *ProductRepository) coalesceCol(alias string, storeID int) string {
 		return fmt.Sprintf("COALESCE(%s_s.value, %s_d.value)", alias, alias)
 	}
 	return alias + "_d.value"
+}
+
+// categoryHierarchySQL builds a SQL IN-subquery that matches products assigned to any of
+// the given category IDs OR any of their descendant categories.
+// It uses catalog_category_entity.path LIKE 'parent/path/%' for hierarchical matching.
+func categoryHierarchySQL(ids []string) (string, []interface{}) {
+	n := len(ids)
+	args := make([]interface{}, 0, n*2)
+
+	// Direct entity_id matches
+	directPH := make([]string, n)
+	for i, id := range ids {
+		directPH[i] = "?"
+		args = append(args, id)
+	}
+
+	// Descendant matches via path LIKE
+	likeConds := make([]string, n)
+	for i, id := range ids {
+		likeConds[i] = "path LIKE CONCAT((SELECT path FROM catalog_category_entity WHERE entity_id = ?), '/%')"
+		args = append(args, id)
+	}
+
+	sql := fmt.Sprintf(
+		`cpe.entity_id IN (
+			SELECT ccp.product_id FROM catalog_category_product ccp
+			WHERE ccp.category_id IN (
+				SELECT entity_id FROM catalog_category_entity
+				WHERE entity_id IN (%s)
+				   OR %s
+			)
+		)`,
+		strings.Join(directPH, ","),
+		strings.Join(likeConds, " OR "),
+	)
+	return sql, args
 }
 
 // decodeMagentoUID decodes a base64-encoded Magento UID back to the raw value.

@@ -176,6 +176,12 @@ type ComplexityRoot struct {
 		TotalCount func(childComplexity int) int
 	}
 
+	CategoryResult struct {
+		Items      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
 	CategoryTree struct {
 		Breadcrumbs   func(childComplexity int) int
 		CanonicalURL  func(childComplexity int) int
@@ -694,7 +700,10 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Products func(childComplexity int, search *string, filter *model.ProductAttributeFilterInput, pageSize *int, currentPage *int, sort *model.ProductAttributeSortInput) int
+		Categories   func(childComplexity int, filters *model.CategoryFilterInput, pageSize *int, currentPage *int) int
+		Category     func(childComplexity int, id *int) int
+		CategoryList func(childComplexity int, filters *model.CategoryFilterInput) int
+		Products     func(childComplexity int, search *string, filter *model.ProductAttributeFilterInput, pageSize *int, currentPage *int, sort *model.ProductAttributeSortInput) int
 	}
 
 	SearchResultPageInfo struct {
@@ -864,6 +873,9 @@ type ComplexityRoot struct {
 
 type QueryResolver interface {
 	Products(ctx context.Context, search *string, filter *model.ProductAttributeFilterInput, pageSize *int, currentPage *int, sort *model.ProductAttributeSortInput) (*model.Products, error)
+	Categories(ctx context.Context, filters *model.CategoryFilterInput, pageSize *int, currentPage *int) (*model.CategoryResult, error)
+	CategoryList(ctx context.Context, filters *model.CategoryFilterInput) ([]*model.CategoryTree, error)
+	Category(ctx context.Context, id *int) (*model.CategoryTree, error)
 }
 
 type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
@@ -1548,6 +1560,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CategoryProducts.TotalCount(childComplexity), true
+
+	case "CategoryResult.items":
+		if e.ComplexityRoot.CategoryResult.Items == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CategoryResult.Items(childComplexity), true
+	case "CategoryResult.page_info":
+		if e.ComplexityRoot.CategoryResult.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CategoryResult.PageInfo(childComplexity), true
+	case "CategoryResult.total_count":
+		if e.ComplexityRoot.CategoryResult.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CategoryResult.TotalCount(childComplexity), true
 
 	case "CategoryTree.breadcrumbs":
 		if e.ComplexityRoot.CategoryTree.Breadcrumbs == nil {
@@ -3802,6 +3833,40 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Products.TotalCount(childComplexity), true
 
+	case "Query.categories":
+		if e.ComplexityRoot.Query.Categories == nil {
+			break
+		}
+
+		args, err := ec.field_Query_categories_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Categories(childComplexity, args["filters"].(*model.CategoryFilterInput), args["pageSize"].(*int), args["currentPage"].(*int)), true
+	case "Query.category":
+		if e.ComplexityRoot.Query.Category == nil {
+			break
+		}
+
+		args, err := ec.field_Query_category_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Category(childComplexity, args["id"].(*int)), true
+	case "Query.categoryList":
+		if e.ComplexityRoot.Query.CategoryList == nil {
+			break
+		}
+
+		args, err := ec.field_Query_categoryList_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.CategoryList(childComplexity, args["filters"].(*model.CategoryFilterInput)), true
+
 	case "Query.products":
 		if e.ComplexityRoot.Query.Products == nil {
 			break
@@ -4659,6 +4724,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputAggregationsCategoryFilterInput,
 		ec.unmarshalInputAggregationsFilterInput,
 		ec.unmarshalInputAttributeFilterInput,
+		ec.unmarshalInputCategoryFilterInput,
 		ec.unmarshalInputFilterEqualTypeInput,
 		ec.unmarshalInputFilterMatchTypeInput,
 		ec.unmarshalInputFilterRangeTypeInput,
@@ -4875,6 +4941,49 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		return nil, err
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_categories_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filters", ec.unmarshalOCategoryFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryFilterInput)
+	if err != nil {
+		return nil, err
+	}
+	args["filters"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "pageSize", ec.unmarshalOInt2ᚖint)
+	if err != nil {
+		return nil, err
+	}
+	args["pageSize"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "currentPage", ec.unmarshalOInt2ᚖint)
+	if err != nil {
+		return nil, err
+	}
+	args["currentPage"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_categoryList_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filters", ec.unmarshalOCategoryFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryFilterInput)
+	if err != nil {
+		return nil, err
+	}
+	args["filters"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_category_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalOInt2ᚖint)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -8365,6 +8474,147 @@ func (ec *executionContext) _CategoryProducts_total_count(ctx context.Context, f
 func (ec *executionContext) fieldContext_CategoryProducts_total_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "CategoryProducts",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CategoryResult_items(ctx context.Context, field graphql.CollectedField, obj *model.CategoryResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_CategoryResult_items,
+		func(ctx context.Context) (any, error) {
+			return obj.Items, nil
+		},
+		nil,
+		ec.marshalOCategoryTree2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryTree,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_CategoryResult_items(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CategoryResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_CategoryTree_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_CategoryTree_uid(ctx, field)
+			case "description":
+				return ec.fieldContext_CategoryTree_description(ctx, field)
+			case "name":
+				return ec.fieldContext_CategoryTree_name(ctx, field)
+			case "path":
+				return ec.fieldContext_CategoryTree_path(ctx, field)
+			case "path_in_store":
+				return ec.fieldContext_CategoryTree_path_in_store(ctx, field)
+			case "url_key":
+				return ec.fieldContext_CategoryTree_url_key(ctx, field)
+			case "url_path":
+				return ec.fieldContext_CategoryTree_url_path(ctx, field)
+			case "canonical_url":
+				return ec.fieldContext_CategoryTree_canonical_url(ctx, field)
+			case "position":
+				return ec.fieldContext_CategoryTree_position(ctx, field)
+			case "level":
+				return ec.fieldContext_CategoryTree_level(ctx, field)
+			case "created_at":
+				return ec.fieldContext_CategoryTree_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_CategoryTree_updated_at(ctx, field)
+			case "product_count":
+				return ec.fieldContext_CategoryTree_product_count(ctx, field)
+			case "default_sort_by":
+				return ec.fieldContext_CategoryTree_default_sort_by(ctx, field)
+			case "products":
+				return ec.fieldContext_CategoryTree_products(ctx, field)
+			case "breadcrumbs":
+				return ec.fieldContext_CategoryTree_breadcrumbs(ctx, field)
+			case "url_suffix":
+				return ec.fieldContext_CategoryTree_url_suffix(ctx, field)
+			case "relative_url":
+				return ec.fieldContext_CategoryTree_relative_url(ctx, field)
+			case "redirect_code":
+				return ec.fieldContext_CategoryTree_redirect_code(ctx, field)
+			case "type":
+				return ec.fieldContext_CategoryTree_type(ctx, field)
+			case "children":
+				return ec.fieldContext_CategoryTree_children(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CategoryTree", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CategoryResult_page_info(ctx context.Context, field graphql.CollectedField, obj *model.CategoryResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_CategoryResult_page_info,
+		func(ctx context.Context) (any, error) {
+			return obj.PageInfo, nil
+		},
+		nil,
+		ec.marshalOSearchResultPageInfo2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐSearchResultPageInfo,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_CategoryResult_page_info(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CategoryResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "page_size":
+				return ec.fieldContext_SearchResultPageInfo_page_size(ctx, field)
+			case "current_page":
+				return ec.fieldContext_SearchResultPageInfo_current_page(ctx, field)
+			case "total_pages":
+				return ec.fieldContext_SearchResultPageInfo_total_pages(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SearchResultPageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CategoryResult_total_count(ctx context.Context, field graphql.CollectedField, obj *model.CategoryResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_CategoryResult_total_count,
+		func(ctx context.Context) (any, error) {
+			return obj.TotalCount, nil
+		},
+		nil,
+		ec.marshalOInt2ᚖint,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_CategoryResult_total_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CategoryResult",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -19970,6 +20220,229 @@ func (ec *executionContext) fieldContext_Query_products(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_categories(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_categories,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().Categories(ctx, fc.Args["filters"].(*model.CategoryFilterInput), fc.Args["pageSize"].(*int), fc.Args["currentPage"].(*int))
+		},
+		nil,
+		ec.marshalOCategoryResult2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryResult,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_categories(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "items":
+				return ec.fieldContext_CategoryResult_items(ctx, field)
+			case "page_info":
+				return ec.fieldContext_CategoryResult_page_info(ctx, field)
+			case "total_count":
+				return ec.fieldContext_CategoryResult_total_count(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CategoryResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_categories_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_categoryList(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_categoryList,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().CategoryList(ctx, fc.Args["filters"].(*model.CategoryFilterInput))
+		},
+		nil,
+		ec.marshalOCategoryTree2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryTree,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_categoryList(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_CategoryTree_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_CategoryTree_uid(ctx, field)
+			case "description":
+				return ec.fieldContext_CategoryTree_description(ctx, field)
+			case "name":
+				return ec.fieldContext_CategoryTree_name(ctx, field)
+			case "path":
+				return ec.fieldContext_CategoryTree_path(ctx, field)
+			case "path_in_store":
+				return ec.fieldContext_CategoryTree_path_in_store(ctx, field)
+			case "url_key":
+				return ec.fieldContext_CategoryTree_url_key(ctx, field)
+			case "url_path":
+				return ec.fieldContext_CategoryTree_url_path(ctx, field)
+			case "canonical_url":
+				return ec.fieldContext_CategoryTree_canonical_url(ctx, field)
+			case "position":
+				return ec.fieldContext_CategoryTree_position(ctx, field)
+			case "level":
+				return ec.fieldContext_CategoryTree_level(ctx, field)
+			case "created_at":
+				return ec.fieldContext_CategoryTree_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_CategoryTree_updated_at(ctx, field)
+			case "product_count":
+				return ec.fieldContext_CategoryTree_product_count(ctx, field)
+			case "default_sort_by":
+				return ec.fieldContext_CategoryTree_default_sort_by(ctx, field)
+			case "products":
+				return ec.fieldContext_CategoryTree_products(ctx, field)
+			case "breadcrumbs":
+				return ec.fieldContext_CategoryTree_breadcrumbs(ctx, field)
+			case "url_suffix":
+				return ec.fieldContext_CategoryTree_url_suffix(ctx, field)
+			case "relative_url":
+				return ec.fieldContext_CategoryTree_relative_url(ctx, field)
+			case "redirect_code":
+				return ec.fieldContext_CategoryTree_redirect_code(ctx, field)
+			case "type":
+				return ec.fieldContext_CategoryTree_type(ctx, field)
+			case "children":
+				return ec.fieldContext_CategoryTree_children(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CategoryTree", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_categoryList_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_category(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_category,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().Category(ctx, fc.Args["id"].(*int))
+		},
+		nil,
+		ec.marshalOCategoryTree2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryTree,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_category(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_CategoryTree_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_CategoryTree_uid(ctx, field)
+			case "description":
+				return ec.fieldContext_CategoryTree_description(ctx, field)
+			case "name":
+				return ec.fieldContext_CategoryTree_name(ctx, field)
+			case "path":
+				return ec.fieldContext_CategoryTree_path(ctx, field)
+			case "path_in_store":
+				return ec.fieldContext_CategoryTree_path_in_store(ctx, field)
+			case "url_key":
+				return ec.fieldContext_CategoryTree_url_key(ctx, field)
+			case "url_path":
+				return ec.fieldContext_CategoryTree_url_path(ctx, field)
+			case "canonical_url":
+				return ec.fieldContext_CategoryTree_canonical_url(ctx, field)
+			case "position":
+				return ec.fieldContext_CategoryTree_position(ctx, field)
+			case "level":
+				return ec.fieldContext_CategoryTree_level(ctx, field)
+			case "created_at":
+				return ec.fieldContext_CategoryTree_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_CategoryTree_updated_at(ctx, field)
+			case "product_count":
+				return ec.fieldContext_CategoryTree_product_count(ctx, field)
+			case "default_sort_by":
+				return ec.fieldContext_CategoryTree_default_sort_by(ctx, field)
+			case "products":
+				return ec.fieldContext_CategoryTree_products(ctx, field)
+			case "breadcrumbs":
+				return ec.fieldContext_CategoryTree_breadcrumbs(ctx, field)
+			case "url_suffix":
+				return ec.fieldContext_CategoryTree_url_suffix(ctx, field)
+			case "relative_url":
+				return ec.fieldContext_CategoryTree_relative_url(ctx, field)
+			case "redirect_code":
+				return ec.fieldContext_CategoryTree_redirect_code(ctx, field)
+			case "type":
+				return ec.fieldContext_CategoryTree_type(ctx, field)
+			case "children":
+				return ec.fieldContext_CategoryTree_children(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CategoryTree", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_category_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -25926,6 +26399,78 @@ func (ec *executionContext) unmarshalInputAttributeFilterInput(ctx context.Conte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCategoryFilterInput(ctx context.Context, obj any) (model.CategoryFilterInput, error) {
+	var it model.CategoryFilterInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"ids", "name", "parent_id", "url_key", "url_path", "category_uid", "parent_category_uid"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "ids":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ids"))
+			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Ids = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOFilterMatchTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterMatchTypeInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "parent_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parent_id"))
+			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ParentID = data
+		case "url_key":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url_key"))
+			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLKey = data
+		case "url_path":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url_path"))
+			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLPath = data
+		case "category_uid":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_uid"))
+			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CategoryUID = data
+		case "parent_category_uid":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parent_category_uid"))
+			data, err := ec.unmarshalOFilterEqualTypeInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐFilterEqualTypeInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ParentCategoryUID = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputFilterEqualTypeInput(ctx context.Context, obj any) (model.FilterEqualTypeInput, error) {
 	var it model.FilterEqualTypeInput
 	if obj == nil {
@@ -27161,6 +27706,46 @@ func (ec *executionContext) _CategoryProducts(ctx context.Context, sel ast.Selec
 			out.Values[i] = ec._CategoryProducts_page_info(ctx, field, obj)
 		case "total_count":
 			out.Values[i] = ec._CategoryProducts_total_count(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var categoryResultImplementors = []string{"CategoryResult"}
+
+func (ec *executionContext) _CategoryResult(ctx context.Context, sel ast.SelectionSet, obj *model.CategoryResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, categoryResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CategoryResult")
+		case "items":
+			out.Values[i] = ec._CategoryResult_items(ctx, field, obj)
+		case "page_info":
+			out.Values[i] = ec._CategoryResult_page_info(ctx, field, obj)
+		case "total_count":
+			out.Values[i] = ec._CategoryResult_total_count(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -29889,6 +30474,63 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "categories":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_categories(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "categoryList":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_categoryList(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "category":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_category(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -31521,6 +32163,14 @@ func (ec *executionContext) marshalOBundleItemOption2ᚖgithubᚗcomᚋmagendoor
 	return ec._BundleItemOption(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalOCategoryFilterInput2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryFilterInput(ctx context.Context, v any) (*model.CategoryFilterInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputCategoryFilterInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalOCategoryInterface2githubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryInterface(ctx context.Context, sel ast.SelectionSet, v model.CategoryInterface) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -31546,6 +32196,13 @@ func (ec *executionContext) marshalOCategoryProducts2ᚖgithubᚗcomᚋmagendoor
 		return graphql.Null
 	}
 	return ec._CategoryProducts(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOCategoryResult2ᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryResult(ctx context.Context, sel ast.SelectionSet, v *model.CategoryResult) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._CategoryResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOCategoryTree2ᚕᚖgithubᚗcomᚋmagendooroᚋmagento2ᚑcatalogᚑgraphqlᚑgoᚋgraphᚋmodelᚐCategoryTree(ctx context.Context, sel ast.SelectionSet, v []*model.CategoryTree) graphql.Marshaler {

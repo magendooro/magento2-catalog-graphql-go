@@ -289,7 +289,7 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 			aggregations = []*model.Aggregation{}
 		}
 	} else if rf.Aggregations {
-		aggregations = s.loadAggregations(ctx, storeID, allMatchingIDs, storeCfg)
+		aggregations = s.loadAggregations(ctx, storeID, allMatchingIDs, storeCfg, filter)
 		if aggregations == nil {
 			aggregations = []*model.Aggregation{}
 		}
@@ -1277,7 +1277,7 @@ func (s *ProductService) resolveCategoryName(ctx context.Context, catID, storeID
 	return s.categoryRepo.GetCategoryName(ctx, catID, storeID)
 }
 
-func (s *ProductService) loadAggregations(ctx context.Context, storeID int, matchingIDs []int, storeCfg *repository.StoreConfig) []*model.Aggregation {
+func (s *ProductService) loadAggregations(ctx context.Context, storeID int, matchingIDs []int, storeCfg *repository.StoreConfig, filter *model.ProductAttributeFilterInput) []*model.Aggregation {
 	if len(matchingIDs) == 0 {
 		return nil
 	}
@@ -1288,10 +1288,17 @@ func (s *ProductService) loadAggregations(ctx context.Context, storeID int, matc
 		return nil
 	}
 
+	// Extract scope category ID from filter so the category aggregation only returns
+	// descendants of the queried category, not cross-tree categories (Collections, etc.).
+	scopeCategoryID := 0
+	if filter != nil && filter.CategoryID != nil && filter.CategoryID.Eq != nil {
+		fmt.Sscanf(*filter.CategoryID.Eq, "%d", &scopeCategoryID)
+	}
+
 	var aggregations []*model.Aggregation
 
 	// Add category aggregation
-	catBucket, _ := s.aggregationRepo.GetCategoryAggregation(ctx, matchingIDs, storeID)
+	catBucket, _ := s.aggregationRepo.GetCategoryAggregation(ctx, matchingIDs, storeID, scopeCategoryID)
 	if catBucket != nil {
 		aggregations = append(aggregations, bucketToAggregation(catBucket))
 	}
