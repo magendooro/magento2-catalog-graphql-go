@@ -55,6 +55,7 @@ type ProductEAVValues struct {
 	GiftMsgAvail      *string
 	IsPersonalizable  *string
 	IsVirtual         *string
+	GithubURL         *string
 }
 
 // eavJoinDef defines an EAV attribute JOIN for the product query.
@@ -90,6 +91,7 @@ var coreEAVAttributes = []eavJoinDef{
 	{"isp", "is_personalizable"},
 	{"swimg", "swatch_image"},
 	{"isv", "is_virtual"},
+	{"ghurl", "github_url"},
 }
 
 // FindProducts queries products with EAV attributes resolved via optimized JOINs.
@@ -190,7 +192,7 @@ func (r *ProductRepository) FindProducts(ctx context.Context, storeID int, searc
 			&p.Weight, &p.Status, &p.Visibility,
 			&p.Manufacturer, &p.CountryOfMfg,
 			&p.OptionsContainer, &p.GiftMsgAvail, &p.IsPersonalizable,
-			&p.SwatchImage, &p.IsVirtual,
+			&p.SwatchImage, &p.IsVirtual, &p.GithubURL,
 		)
 		if err != nil {
 			return nil, 0, nil, fmt.Errorf("scan failed: %w", err)
@@ -317,7 +319,7 @@ func (r *ProductRepository) FindProductsByIDs(ctx context.Context, storeID int, 
 			&p.Weight, &p.Status, &p.Visibility,
 			&p.Manufacturer, &p.CountryOfMfg,
 			&p.OptionsContainer, &p.GiftMsgAvail, &p.IsPersonalizable,
-			&p.SwatchImage, &p.IsVirtual,
+			&p.SwatchImage, &p.IsVirtual, &p.GithubURL,
 		)
 		if err != nil {
 			return nil, 0, nil, fmt.Errorf("scan product by ID: %w", err)
