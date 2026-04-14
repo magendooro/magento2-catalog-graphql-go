@@ -40,9 +40,11 @@ type AggregationBucket struct {
 
 // AggregationOption holds a single aggregation option with count.
 type AggregationOption struct {
-	Value string
-	Label string
-	Count int
+	Value      string
+	Label      string
+	Count      int
+	SwatchType *int    // nil when no swatch; 0=text, 1=color, 2=image
+	SwatchValue *string // hex code (type 1), image path (type 2), text (type 0)
 }
 
 // GetFilterableAttributes returns all filterable product attributes.
@@ -121,9 +123,14 @@ func (r *AggregationRepository) GetSelectAggregations(ctx context.Context, attr 
 	// 2. catalog_product_super_link + catalog_product_entity_int — configurable super
 	//    attributes (color, size) stored on child products, mapped back to parent_id
 	//    so the count reflects distinct parent products.
+	//
+	// swatch_type / swatch_value are fetched from eav_attribute_option_swatch so the
+	// frontend can render colour swatches for the "color" attribute without a separate request.
 	query := fmt.Sprintf(`SELECT src.option_id,
 		COALESCE(eaov_s.value, eaov_d.value, CAST(src.option_id AS CHAR)) as label,
-		COUNT(DISTINCT src.parent_id) as cnt
+		COUNT(DISTINCT src.parent_id) as cnt,
+		eas.type as swatch_type,
+		eas.value as swatch_value
 		FROM (
 			SELECT cpie.entity_id as parent_id, cpie.value as option_id
 			FROM catalog_product_index_eav cpie
@@ -141,7 +148,8 @@ func (r *AggregationRepository) GetSelectAggregations(ctx context.Context, attr 
 		LEFT JOIN eav_attribute_option eao ON src.option_id = eao.option_id AND eao.attribute_id = ?
 		LEFT JOIN eav_attribute_option_value eaov_d ON eao.option_id = eaov_d.option_id AND eaov_d.store_id = 0
 		LEFT JOIN eav_attribute_option_value eaov_s ON eao.option_id = eaov_s.option_id AND eaov_s.store_id = %d
-		GROUP BY src.option_id, label
+		LEFT JOIN eav_attribute_option_swatch eas ON src.option_id = eas.option_id AND eas.store_id = 0
+		GROUP BY src.option_id, label, eas.type, eas.value
 		HAVING cnt > 0
 		ORDER BY label ASC`, inClause, storeID, inClause, storeID)
 
@@ -173,11 +181,18 @@ func (r *AggregationRepository) GetSelectAggregations(ctx context.Context, attr 
 
 	for rows.Next() {
 		var optionID int
+		var swatchType sql.NullInt64
+		var swatchValue sql.NullString
 		opt := &AggregationOption{}
-		if err := rows.Scan(&optionID, &opt.Label, &opt.Count); err != nil {
+		if err := rows.Scan(&optionID, &opt.Label, &opt.Count, &swatchType, &swatchValue); err != nil {
 			return nil, fmt.Errorf("select aggregation scan failed: %w", err)
 		}
 		opt.Value = fmt.Sprintf("%d", optionID)
+		if swatchType.Valid && swatchValue.Valid && swatchValue.String != "" {
+			t := int(swatchType.Int64)
+			opt.SwatchType = &t
+			opt.SwatchValue = &swatchValue.String
+		}
 		// Boolean attributes store 0/1 but Magento displays "No"/"Yes"
 		if attr.FrontendInput == "boolean" {
 			if opt.Value == "1" {

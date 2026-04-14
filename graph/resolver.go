@@ -16,6 +16,7 @@ import (
 type Resolver struct {
 	ProductService  *service.ProductService
 	CategoryService *service.CategoryService
+	ReviewService   *service.ReviewService
 }
 
 func NewResolver(db *sql.DB, cfg *localconfig.Config) (*Resolver, error) {
@@ -54,9 +55,11 @@ func NewResolver(db *sql.DB, cfg *localconfig.Config) (*Resolver, error) {
 	}
 
 	categoryService := service.NewCategoryService(categoryRepo, storeConfigRepo)
+	reviewService := service.NewReviewService(reviewRepo, productRepo)
 
 	return &Resolver{
 		ProductService:  productService,
 		CategoryService: categoryService,
+		ReviewService:   reviewService,
 	}, nil
 }

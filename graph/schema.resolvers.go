@@ -22,6 +22,11 @@ func (r *categoryTreeResolver) Children(ctx context.Context, obj *model.Category
 	return r.CategoryService.GetChildren(ctx, *obj.ID)
 }
 
+// CreateProductReview is the resolver for the createProductReview field.
+func (r *mutationResolver) CreateProductReview(ctx context.Context, input model.CreateProductReviewInput) (*model.CreateProductReviewOutput, error) {
+	return r.ReviewService.CreateProductReview(ctx, &input)
+}
+
 // Products is the resolver for the products field.
 func (r *queryResolver) Products(ctx context.Context, search *string, filter *model.ProductAttributeFilterInput, pageSize *int, currentPage *int, sort *model.ProductAttributeSortInput) (*model.Products, error) {
 	ps := 20
@@ -62,11 +67,20 @@ func (r *queryResolver) Category(ctx context.Context, id *int) (*model.CategoryT
 	return r.CategoryService.GetCategoryByID(ctx, *id)
 }
 
+// ProductReviewRatingsMetadata is the resolver for the productReviewRatingsMetadata field.
+func (r *queryResolver) ProductReviewRatingsMetadata(ctx context.Context) (*model.ProductReviewRatingsMetadata, error) {
+	return r.ReviewService.GetRatingsMetadata(ctx)
+}
+
 // CategoryTree returns CategoryTreeResolver implementation.
 func (r *Resolver) CategoryTree() CategoryTreeResolver { return &categoryTreeResolver{r} }
+
+// Mutation returns MutationResolver implementation.
+func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type categoryTreeResolver struct{ *Resolver }
+type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

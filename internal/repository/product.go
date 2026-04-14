@@ -50,9 +50,11 @@ type ProductEAVValues struct {
 	Status           *int
 	Visibility       *int
 	Manufacturer     *int
-	CountryOfMfg     *string
-	OptionsContainer *string
-	GiftMsgAvail     *string
+	CountryOfMfg      *string
+	OptionsContainer  *string
+	GiftMsgAvail      *string
+	IsPersonalizable  *string
+	IsVirtual         *string
 }
 
 // eavJoinDef defines an EAV attribute JOIN for the product query.
@@ -85,7 +87,9 @@ var coreEAVAttributes = []eavJoinDef{
 	{"com", "country_of_manufacture"},
 	{"oc", "options_container"},
 	{"gma", "gift_message_available"},
+	{"isp", "is_personalizable"},
 	{"swimg", "swatch_image"},
+	{"isv", "is_virtual"},
 }
 
 // FindProducts queries products with EAV attributes resolved via optimized JOINs.
@@ -185,8 +189,8 @@ func (r *ProductRepository) FindProducts(ctx context.Context, storeID int, searc
 			&p.NewFromDate, &p.NewToDate,
 			&p.Weight, &p.Status, &p.Visibility,
 			&p.Manufacturer, &p.CountryOfMfg,
-			&p.OptionsContainer, &p.GiftMsgAvail,
-			&p.SwatchImage,
+			&p.OptionsContainer, &p.GiftMsgAvail, &p.IsPersonalizable,
+			&p.SwatchImage, &p.IsVirtual,
 		)
 		if err != nil {
 			return nil, 0, nil, fmt.Errorf("scan failed: %w", err)
@@ -312,8 +316,8 @@ func (r *ProductRepository) FindProductsByIDs(ctx context.Context, storeID int, 
 			&p.NewFromDate, &p.NewToDate,
 			&p.Weight, &p.Status, &p.Visibility,
 			&p.Manufacturer, &p.CountryOfMfg,
-			&p.OptionsContainer, &p.GiftMsgAvail,
-			&p.SwatchImage,
+			&p.OptionsContainer, &p.GiftMsgAvail, &p.IsPersonalizable,
+			&p.SwatchImage, &p.IsVirtual,
 		)
 		if err != nil {
 			return nil, 0, nil, fmt.Errorf("scan product by ID: %w", err)
@@ -472,7 +476,7 @@ func (r *ProductRepository) buildFilterConditions(storeID int, search *string, f
 	if filter.CategoryUID != nil {
 		if filter.CategoryUID.Eq != nil {
 			catID := decodeMagentoUID(*filter.CategoryUID.Eq)
-			sql, sqlArgs := categoryHierarchySQL([]string{fmt.Sprintf("%d", catID)})
+			sql, sqlArgs := categoryHierarchySQL([]string{catID})
 			conditions = append(conditions, sql)
 			args = append(args, sqlArgs...)
 		}
@@ -480,7 +484,7 @@ func (r *ProductRepository) buildFilterConditions(storeID int, search *string, f
 			vals := make([]string, 0, len(filter.CategoryUID.In))
 			for _, v := range filter.CategoryUID.In {
 				if v != nil {
-					vals = append(vals, fmt.Sprintf("%d", decodeMagentoUID(*v)))
+					vals = append(vals, decodeMagentoUID(*v))
 				}
 			}
 			if len(vals) > 0 {
@@ -713,4 +717,18 @@ func EncodeMagentoUID(entityID int) string {
 // base64("configurable/{attribute_id}/{value_index}")
 func EncodeConfigurableUID(attributeID, valueIndex int) string {
 	return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("configurable/%d/%d", attributeID, valueIndex)))
+}
+
+// GetEntityIDBySKU resolves a product SKU to its catalog_product_entity entity_id.
+func (r *ProductRepository) GetEntityIDBySKU(ctx context.Context, sku string) (int, error) {
+	var entityID int
+	err := r.db.QueryRowContext(ctx,
+		`SELECT entity_id FROM catalog_product_entity WHERE sku = ? LIMIT 1`, sku).Scan(&entityID)
+	if err == sql.ErrNoRows {
+		return 0, fmt.Errorf("product with SKU %q not found", sku)
+	}
+	if err != nil {
+		return 0, fmt.Errorf("SKU lookup failed: %w", err)
+	}
+	return entityID, nil
 }
