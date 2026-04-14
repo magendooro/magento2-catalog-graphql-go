@@ -13,6 +13,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
@@ -107,11 +108,17 @@ func (a *App) Run() error {
 	h = middleware.StoreMiddleware(storeResolver)(h)
 	h = middleware.LoggingMiddleware(h)
 	h = middleware.CORSMiddleware(h)
+	h = middleware.MetricsMiddleware("catalog")(h)
 	h = middleware.RecoveryMiddleware(h)
+
+	// Outer mux: /metrics served directly, everything else goes through middleware chain
+	outerMux := http.NewServeMux()
+	outerMux.Handle("/metrics", promhttp.Handler())
+	outerMux.Handle("/", h)
 
 	server := &http.Server{
 		Addr:         ":" + a.cfg.Server.Port,
-		Handler:      h,
+		Handler:      outerMux,
 		ReadTimeout:  a.cfg.Server.ReadTimeout,
 		WriteTimeout: a.cfg.Server.WriteTimeout,
 		IdleTimeout:  120 * time.Second,
