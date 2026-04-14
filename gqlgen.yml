@@ -24,3 +24,7 @@ models:
   Int:
     model:
       - github.com/99designs/gqlgen/graphql.Int
+  CategoryTree:
+    fields:
+      children:
+        resolver: true

@@ -388,8 +388,8 @@ func (r *ConfigurableRepository) GetChildProductsEAV(ctx context.Context, childE
 			&p.NewFromDate, &p.NewToDate,
 			&p.Weight, &p.Status, &p.Visibility,
 			&p.Manufacturer, &p.CountryOfMfg,
-			&p.OptionsContainer, &p.GiftMsgAvail,
-			&p.SwatchImage,
+			&p.OptionsContainer, &p.GiftMsgAvail, &p.IsPersonalizable,
+			&p.SwatchImage, &p.IsVirtual,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("child products scan failed: %w", err)

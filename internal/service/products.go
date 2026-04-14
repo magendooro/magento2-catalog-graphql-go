@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -258,11 +259,23 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 		bData = s.loadBundleData(ctx, bundleEntityIDs, storeID, storeCfg, currency)
 	}
 
-	// 3c. Load review summaries if requested
+	// 3c. Load review summaries and items if requested
+	reviewPageSize := rf.ReviewPageSize
+	if reviewPageSize <= 0 {
+		reviewPageSize = 20 // schema default
+	}
+	reviewCurrentPage := rf.ReviewCurrentPage
+	if reviewCurrentPage <= 0 {
+		reviewCurrentPage = 1 // schema default
+	}
 	var reviewSummaries map[int]*repository.ReviewSummaryData
+	var reviewItems map[int][]*repository.ReviewData
 	if rf.Reviews {
 		if reviewSummaries, err = s.reviewRepo.GetReviewSummariesForProducts(ctx, entityIDs, storeID); err != nil {
 			log.Warn().Err(err).Msg("failed to load review summaries")
+		}
+		if reviewItems, err = s.reviewRepo.GetReviewsForProducts(ctx, entityIDs, storeID, reviewPageSize, reviewCurrentPage); err != nil {
+			log.Warn().Err(err).Msg("failed to load review items")
 		}
 	}
 
@@ -275,7 +288,7 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 	// 4. Map to GraphQL types
 	items := make([]model.ProductInterface, 0, len(products))
 	for _, p := range products {
-		item := s.mapProductToModel(p, storeCfg, currency, prices, tierPrices, mediaGallery, inventory, categories, urlRewrites, configData, bData, relData, reviewSummaries)
+		item := s.mapProductToModel(p, storeCfg, currency, prices, tierPrices, mediaGallery, inventory, categories, urlRewrites, configData, bData, relData, reviewSummaries, reviewItems, reviewPageSize, reviewCurrentPage)
 		if item != nil {
 			items = append(items, item)
 		}
@@ -289,7 +302,7 @@ func (s *ProductService) GetProducts(ctx context.Context, search *string, filter
 			aggregations = []*model.Aggregation{}
 		}
 	} else if rf.Aggregations {
-		aggregations = s.loadAggregations(ctx, storeID, allMatchingIDs, storeCfg)
+		aggregations = s.loadAggregations(ctx, storeID, allMatchingIDs, storeCfg, filter)
 		if aggregations == nil {
 			aggregations = []*model.Aggregation{}
 		}
@@ -343,6 +356,8 @@ func (s *ProductService) mapProductToModel(
 	bData *bundleData,
 	relData *relatedProductsData,
 	reviewSummaries map[int]*repository.ReviewSummaryData,
+	reviewItems map[int][]*repository.ReviewData,
+	reviewPageSize, reviewCurrentPage int,
 ) model.ProductInterface {
 	base := s.buildProductBase(p, storeCfg, currency, prices, tierPrices, mediaGallery, inventory, categories, urlRewrites)
 
@@ -369,13 +384,33 @@ func (s *ProductService) mapProductToModel(
 			base.reviewCount = rs.ReviewCount
 		}
 	}
-	// Always set reviews to empty ProductReviews (it's non-nullable in schema)
+
+	// Build ProductReviews from loaded items (or empty if not requested)
+	reviewModelItems := []*model.ProductReview{}
+	if reviewItems != nil {
+		if rvs, ok := reviewItems[p.EntityID]; ok {
+			for _, rv := range rvs {
+				reviewModelItems = append(reviewModelItems, mapReviewToModel(rv))
+			}
+		}
+	}
+	// Compute total_pages from the review count already loaded via reviewSummaries.
+	totalReviewCount := 0
+	if reviewSummaries != nil {
+		if rs, ok := reviewSummaries[p.EntityID]; ok {
+			totalReviewCount = rs.ReviewCount
+		}
+	}
+	totalReviewPages := int(math.Ceil(float64(totalReviewCount) / float64(reviewPageSize)))
+	if totalReviewPages < 1 {
+		totalReviewPages = 1
+	}
 	base.reviews = &model.ProductReviews{
-		Items: []*model.ProductReview{},
+		Items: reviewModelItems,
 		PageInfo: &model.SearchResultPageInfo{
-			PageSize:    intPtr(20),
-			CurrentPage: intPtr(1),
-			TotalPages:  intPtr(0),
+			PageSize:    &reviewPageSize,
+			CurrentPage: &reviewCurrentPage,
+			TotalPages:  &totalReviewPages,
 		},
 	}
 
@@ -408,6 +443,37 @@ func (s *ProductService) mapProductToModel(
 			bundleItems = bData.items[p.EntityID]
 			bundleAttrs = bData.attrs[p.EntityID]
 		}
+		// Derive is_virtual for bundles not already flagged: virtual when all
+		// selections reference virtual child products (Magento computes this
+		// dynamically and may not persist it to the EAV table).
+		// Bundle children are modelled as SimpleProduct but carry IsVirtual=true
+		// when their underlying type_id is "virtual".
+		if base.isVirtual == nil && len(bundleItems) > 0 {
+			allVirtual := true
+			hasAny := false
+			for _, item := range bundleItems {
+				for _, opt := range item.Options {
+					if opt.Product == nil {
+						continue
+					}
+					hasAny = true
+					isChildVirtual := false
+					switch cp := opt.Product.(type) {
+					case *model.SimpleProduct:
+						isChildVirtual = cp.IsVirtual != nil && *cp.IsVirtual
+					case *model.VirtualProduct:
+						isChildVirtual = true
+					}
+					if !isChildVirtual {
+						allVirtual = false
+					}
+				}
+			}
+			if hasAny && allVirtual {
+				t := true
+				base.isVirtual = &t
+			}
+		}
 		return base.toBundleProduct(bundleItems, bundleAttrs)
 	default:
 		return base.toSimpleProduct()
@@ -436,6 +502,8 @@ type productBase struct {
 	countryOfManufacture *string
 	manufacturer         *int
 	giftMessageAvailable *bool
+	isPersonalizable     *bool
+	isVirtual            *bool
 	optionsContainer     *string
 	urlKey               *string
 	urlSuffix            *string
@@ -471,7 +539,7 @@ func (b productBase) toSimpleProduct() *model.SimpleProduct {
 		MetaTitle: b.metaTitle, MetaKeyword: b.metaKeyword, MetaDescription: b.metaDescription,
 		NewFromDate: b.newFromDate, NewToDate: b.newToDate, CreatedAt: b.createdAt, UpdatedAt: b.updatedAt,
 		CountryOfManufacture: b.countryOfManufacture, Manufacturer: b.manufacturer,
-		GiftMessageAvailable: b.giftMessageAvailable, OptionsContainer: b.optionsContainer,
+		GiftMessageAvailable: b.giftMessageAvailable, IsPersonalizable: b.isPersonalizable, IsVirtual: b.isVirtual, OptionsContainer: b.optionsContainer,
 		URLKey: b.urlKey, URLSuffix: b.urlSuffix, CanonicalURL: b.canonicalURL,
 		Image: b.image, SmallImage: b.smallImage, Thumbnail: b.thumbnail, SwatchImage: b.swatchImage,
 		Weight: b.weight, PriceRange: b.priceRange, PriceTiers: b.priceTiers,
@@ -491,7 +559,7 @@ func (b productBase) toConfigurableProduct(variants []*model.ConfigurableVariant
 		MetaTitle: b.metaTitle, MetaKeyword: b.metaKeyword, MetaDescription: b.metaDescription,
 		NewFromDate: b.newFromDate, NewToDate: b.newToDate, CreatedAt: b.createdAt, UpdatedAt: b.updatedAt,
 		CountryOfManufacture: b.countryOfManufacture, Manufacturer: b.manufacturer,
-		GiftMessageAvailable: b.giftMessageAvailable, OptionsContainer: b.optionsContainer,
+		GiftMessageAvailable: b.giftMessageAvailable, IsPersonalizable: b.isPersonalizable, IsVirtual: b.isVirtual, OptionsContainer: b.optionsContainer,
 		URLKey: b.urlKey, URLSuffix: b.urlSuffix, CanonicalURL: b.canonicalURL,
 		Image: b.image, SmallImage: b.smallImage, Thumbnail: b.thumbnail, SwatchImage: b.swatchImage,
 		Weight: b.weight, PriceRange: b.priceRange, PriceTiers: b.priceTiers,
@@ -512,7 +580,7 @@ func (b productBase) toVirtualProduct() *model.VirtualProduct {
 		MetaTitle: b.metaTitle, MetaKeyword: b.metaKeyword, MetaDescription: b.metaDescription,
 		NewFromDate: b.newFromDate, NewToDate: b.newToDate, CreatedAt: b.createdAt, UpdatedAt: b.updatedAt,
 		CountryOfManufacture: b.countryOfManufacture, Manufacturer: b.manufacturer,
-		GiftMessageAvailable: b.giftMessageAvailable, OptionsContainer: b.optionsContainer,
+		GiftMessageAvailable: b.giftMessageAvailable, IsPersonalizable: b.isPersonalizable, IsVirtual: b.isVirtual, OptionsContainer: b.optionsContainer,
 		URLKey: b.urlKey, URLSuffix: b.urlSuffix, CanonicalURL: b.canonicalURL,
 		Image: b.image, SmallImage: b.smallImage, Thumbnail: b.thumbnail, SwatchImage: b.swatchImage,
 		PriceRange: b.priceRange, PriceTiers: b.priceTiers,
@@ -532,7 +600,7 @@ func (b productBase) toGroupedProduct() *model.GroupedProduct {
 		MetaTitle: b.metaTitle, MetaKeyword: b.metaKeyword, MetaDescription: b.metaDescription,
 		NewFromDate: b.newFromDate, NewToDate: b.newToDate, CreatedAt: b.createdAt, UpdatedAt: b.updatedAt,
 		CountryOfManufacture: b.countryOfManufacture, Manufacturer: b.manufacturer,
-		GiftMessageAvailable: b.giftMessageAvailable, OptionsContainer: b.optionsContainer,
+		GiftMessageAvailable: b.giftMessageAvailable, IsPersonalizable: b.isPersonalizable, IsVirtual: b.isVirtual, OptionsContainer: b.optionsContainer,
 		URLKey: b.urlKey, URLSuffix: b.urlSuffix, CanonicalURL: b.canonicalURL,
 		Image: b.image, SmallImage: b.smallImage, Thumbnail: b.thumbnail, SwatchImage: b.swatchImage,
 		Weight: b.weight, PriceRange: b.priceRange, PriceTiers: b.priceTiers,
@@ -552,7 +620,7 @@ func (b productBase) toBundleProduct(bundleItems []*model.BundleItem, bundleAttr
 		MetaTitle: b.metaTitle, MetaKeyword: b.metaKeyword, MetaDescription: b.metaDescription,
 		NewFromDate: b.newFromDate, NewToDate: b.newToDate, CreatedAt: b.createdAt, UpdatedAt: b.updatedAt,
 		CountryOfManufacture: b.countryOfManufacture, Manufacturer: b.manufacturer,
-		GiftMessageAvailable: b.giftMessageAvailable, OptionsContainer: b.optionsContainer,
+		GiftMessageAvailable: b.giftMessageAvailable, IsPersonalizable: b.isPersonalizable, IsVirtual: b.isVirtual, OptionsContainer: b.optionsContainer,
 		URLKey: b.urlKey, URLSuffix: b.urlSuffix, CanonicalURL: b.canonicalURL,
 		Image: b.image, SmallImage: b.smallImage, Thumbnail: b.thumbnail, SwatchImage: b.swatchImage,
 		Weight: b.weight, PriceRange: b.priceRange, PriceTiers: b.priceTiers,
@@ -600,6 +668,21 @@ func toBoolFromEAV(s *string) *bool {
 	}
 	v := *s == "1"
 	return &v
+}
+
+// deriveIsVirtual resolves the is_virtual flag. Magento stores it as an EAV
+// int attribute for simple/virtual products but computes it dynamically for
+// bundles. When the EAV value is absent, fall back to type_id: a product
+// with type_id="virtual" is always virtual.
+func deriveIsVirtual(eavVal *string, typeID string) *bool {
+	if v := toBoolFromEAV(eavVal); v != nil {
+		return v
+	}
+	if typeID == "virtual" {
+		t := true
+		return &t
+	}
+	return nil
 }
 
 func toProductImage(path *string, baseURL string, labelFallback *string) *model.ProductImage {
@@ -892,6 +975,8 @@ func (s *ProductService) buildProductBase(
 		countryOfManufacture: p.CountryOfMfg,
 		manufacturer:         p.Manufacturer,
 		giftMessageAvailable: toBoolFromEAV(p.GiftMsgAvail),
+		isPersonalizable:     toBoolFromEAV(p.IsPersonalizable),
+		isVirtual:            deriveIsVirtual(p.IsVirtual, p.TypeID),
 		optionsContainer:     p.OptionsContainer,
 		urlKey:               p.URLKey,
 		urlSuffix:            &urlSuffix,
@@ -911,6 +996,31 @@ func (s *ProductService) buildProductBase(
 		onlyXLeftInStock:     onlyXLeft,
 		categories:           cats,
 		urlRewrites:          urlRW,
+	}
+}
+
+// mapReviewToModel converts a ReviewData struct to a ProductReview GraphQL model.
+func mapReviewToModel(rv *repository.ReviewData) *model.ProductReview {
+	var totalPercent int
+	breakdown := make([]*model.ProductReviewRating, 0, len(rv.Ratings))
+	for _, rd := range rv.Ratings {
+		breakdown = append(breakdown, &model.ProductReviewRating{
+			Name:  rd.RatingName,
+			Value: strconv.Itoa(rd.Value),
+		})
+		totalPercent += rd.Percent
+	}
+	var avgRating float64
+	if len(rv.Ratings) > 0 {
+		avgRating = float64(totalPercent) / float64(len(rv.Ratings))
+	}
+	return &model.ProductReview{
+		Summary:          rv.Title,
+		Text:             rv.Detail,
+		Nickname:         rv.Nickname,
+		CreatedAt:        formatMagentoDate(rv.CreatedAt),
+		AverageRating:    avgRating,
+		RatingsBreakdown: breakdown,
 	}
 }
 
@@ -1277,7 +1387,7 @@ func (s *ProductService) resolveCategoryName(ctx context.Context, catID, storeID
 	return s.categoryRepo.GetCategoryName(ctx, catID, storeID)
 }
 
-func (s *ProductService) loadAggregations(ctx context.Context, storeID int, matchingIDs []int, storeCfg *repository.StoreConfig) []*model.Aggregation {
+func (s *ProductService) loadAggregations(ctx context.Context, storeID int, matchingIDs []int, storeCfg *repository.StoreConfig, filter *model.ProductAttributeFilterInput) []*model.Aggregation {
 	if len(matchingIDs) == 0 {
 		return nil
 	}
@@ -1288,23 +1398,31 @@ func (s *ProductService) loadAggregations(ctx context.Context, storeID int, matc
 		return nil
 	}
 
-	var aggregations []*model.Aggregation
-
-	// Add category aggregation
-	catBucket, _ := s.aggregationRepo.GetCategoryAggregation(ctx, matchingIDs, storeID)
-	if catBucket != nil {
-		aggregations = append(aggregations, bucketToAggregation(catBucket))
+	// Extract scope category ID from filter so the category aggregation only returns
+	// descendants of the queried category, not cross-tree categories (Collections, etc.).
+	scopeCategoryID := 0
+	if filter != nil && filter.CategoryID != nil && filter.CategoryID.Eq != nil {
+		fmt.Sscanf(*filter.CategoryID.Eq, "%d", &scopeCategoryID)
 	}
 
+	var aggregations []*model.Aggregation
+
+	// Iterate filterable attributes in position/attribute_id order (matches Magento).
+	// Insert category aggregation right after price (Magento order: price, category, EAV attrs).
+	categoryInserted := false
 	for _, attr := range filterableAttrs {
 		if attr.FrontendInput == "price" {
-			// Price aggregation
 			priceBucket, _ := s.aggregationRepo.GetPriceAggregation(ctx, matchingIDs, storeCfg.WebsiteID)
 			if priceBucket != nil {
 				aggregations = append(aggregations, bucketToAggregation(priceBucket))
 			}
+			// Category aggregation follows price
+			catBucket, _ := s.aggregationRepo.GetCategoryAggregation(ctx, matchingIDs, storeID, scopeCategoryID)
+			if catBucket != nil {
+				aggregations = append(aggregations, bucketToAggregation(catBucket))
+			}
+			categoryInserted = true
 		} else if attr.FrontendInput == "select" || attr.FrontendInput == "multiselect" || attr.FrontendInput == "boolean" {
-			// Select/multiselect aggregation using EAV index
 			bucket, _ := s.aggregationRepo.GetSelectAggregations(ctx, attr, matchingIDs, storeID)
 			if bucket != nil {
 				aggregations = append(aggregations, bucketToAggregation(bucket))
@@ -1312,7 +1430,31 @@ func (s *ProductService) loadAggregations(ctx context.Context, storeID int, matc
 		}
 	}
 
+	// Fallback: if no price attribute was found, still add category aggregation
+	if !categoryInserted {
+		catBucket, _ := s.aggregationRepo.GetCategoryAggregation(ctx, matchingIDs, storeID, scopeCategoryID)
+		if catBucket != nil {
+			aggregations = append(aggregations, bucketToAggregation(catBucket))
+		}
+	}
+
 	return aggregations
+}
+
+
+func buildAggSwatchData(opt *repository.AggregationOption) model.SwatchDataInterface {
+	if opt.SwatchType == nil || opt.SwatchValue == nil {
+		return nil
+	}
+	v := *opt.SwatchValue
+	switch *opt.SwatchType {
+	case 1: // color hex
+		return model.ColorSwatchData{Value: &v}
+	case 2: // image
+		return model.ImageSwatchData{Value: &v}
+	default: // text (0) or other
+		return model.TextSwatchData{Value: &v}
+	}
 }
 
 func bucketToAggregation(bucket *repository.AggregationBucket) *model.Aggregation {
@@ -1323,9 +1465,10 @@ func bucketToAggregation(bucket *repository.AggregationBucket) *model.Aggregatio
 		optCount := opt.Count
 		label := opt.Label
 		options[i] = &model.AggregationOption{
-			Count: &optCount,
-			Label: &label,
-			Value: opt.Value,
+			Count:      &optCount,
+			Label:      &label,
+			Value:      opt.Value,
+			SwatchData: buildAggSwatchData(opt),
 		}
 	}
 	return &model.Aggregation{

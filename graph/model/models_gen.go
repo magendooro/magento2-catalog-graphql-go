@@ -87,6 +87,8 @@ type ProductInterface interface {
 	GetCountryOfManufacture() *string
 	GetManufacturer() *int
 	GetGiftMessageAvailable() *bool
+	GetIsPersonalizable() *bool
+	GetIsVirtual() *bool
 	GetCanonicalURL() *string
 	GetImage() *ProductImage
 	GetSmallImage() *ProductImage
@@ -140,9 +142,10 @@ type Aggregation struct {
 }
 
 type AggregationOption struct {
-	Count *int    `json:"count,omitempty"`
-	Label *string `json:"label,omitempty"`
-	Value string  `json:"value"`
+	Count      *int                `json:"count,omitempty"`
+	Label      *string             `json:"label,omitempty"`
+	Value      string              `json:"value"`
+	SwatchData SwatchDataInterface `json:"swatch_data,omitempty"`
 }
 
 type AggregationsCategoryFilterInput struct {
@@ -251,6 +254,8 @@ type BundleProduct struct {
 	CountryOfManufacture *string                       `json:"country_of_manufacture,omitempty"`
 	Manufacturer         *int                          `json:"manufacturer,omitempty"`
 	GiftMessageAvailable *bool                         `json:"gift_message_available,omitempty"`
+	IsPersonalizable     *bool                         `json:"is_personalizable,omitempty"`
+	IsVirtual            *bool                         `json:"is_virtual,omitempty"`
 	CanonicalURL         *string                       `json:"canonical_url,omitempty"`
 	Image                *ProductImage                 `json:"image,omitempty"`
 	SmallImage           *ProductImage                 `json:"small_image,omitempty"`
@@ -318,6 +323,8 @@ func (this BundleProduct) GetUpdatedAt() *string                  { return this.
 func (this BundleProduct) GetCountryOfManufacture() *string       { return this.CountryOfManufacture }
 func (this BundleProduct) GetManufacturer() *int                  { return this.Manufacturer }
 func (this BundleProduct) GetGiftMessageAvailable() *bool         { return this.GiftMessageAvailable }
+func (this BundleProduct) GetIsPersonalizable() *bool             { return this.IsPersonalizable }
+func (this BundleProduct) GetIsVirtual() *bool                    { return this.IsVirtual }
 func (this BundleProduct) GetCanonicalURL() *string               { return this.CanonicalURL }
 func (this BundleProduct) GetImage() *ProductImage                { return this.Image }
 func (this BundleProduct) GetSmallImage() *ProductImage           { return this.SmallImage }
@@ -470,8 +477,24 @@ func (this BundleProduct) GetRelativeURL() *string            { return this.Rela
 func (this BundleProduct) GetRedirectCode() int               { return this.RedirectCode }
 func (this BundleProduct) GetType() *URLRewriteEntityTypeEnum { return this.Type }
 
+type CategoryFilterInput struct {
+	Ids               *FilterEqualTypeInput `json:"ids,omitempty"`
+	Name              *FilterMatchTypeInput `json:"name,omitempty"`
+	ParentID          *FilterEqualTypeInput `json:"parent_id,omitempty"`
+	URLKey            *FilterEqualTypeInput `json:"url_key,omitempty"`
+	URLPath           *FilterEqualTypeInput `json:"url_path,omitempty"`
+	CategoryUID       *FilterEqualTypeInput `json:"category_uid,omitempty"`
+	ParentCategoryUID *FilterEqualTypeInput `json:"parent_category_uid,omitempty"`
+}
+
 type CategoryProducts struct {
 	Items      []ProductInterface    `json:"items,omitempty"`
+	PageInfo   *SearchResultPageInfo `json:"page_info,omitempty"`
+	TotalCount *int                  `json:"total_count,omitempty"`
+}
+
+type CategoryResult struct {
+	Items      []*CategoryTree       `json:"items,omitempty"`
 	PageInfo   *SearchResultPageInfo `json:"page_info,omitempty"`
 	TotalCount *int                  `json:"total_count,omitempty"`
 }
@@ -582,6 +605,8 @@ type ConfigurableProduct struct {
 	CountryOfManufacture                *string                              `json:"country_of_manufacture,omitempty"`
 	Manufacturer                        *int                                 `json:"manufacturer,omitempty"`
 	GiftMessageAvailable                *bool                                `json:"gift_message_available,omitempty"`
+	IsPersonalizable                    *bool                                `json:"is_personalizable,omitempty"`
+	IsVirtual                           *bool                                `json:"is_virtual,omitempty"`
 	CanonicalURL                        *string                              `json:"canonical_url,omitempty"`
 	Image                               *ProductImage                        `json:"image,omitempty"`
 	SmallImage                          *ProductImage                        `json:"small_image,omitempty"`
@@ -646,6 +671,8 @@ func (this ConfigurableProduct) GetUpdatedAt() *string                  { return
 func (this ConfigurableProduct) GetCountryOfManufacture() *string       { return this.CountryOfManufacture }
 func (this ConfigurableProduct) GetManufacturer() *int                  { return this.Manufacturer }
 func (this ConfigurableProduct) GetGiftMessageAvailable() *bool         { return this.GiftMessageAvailable }
+func (this ConfigurableProduct) GetIsPersonalizable() *bool             { return this.IsPersonalizable }
+func (this ConfigurableProduct) GetIsVirtual() *bool                    { return this.IsVirtual }
 func (this ConfigurableProduct) GetCanonicalURL() *string               { return this.CanonicalURL }
 func (this ConfigurableProduct) GetImage() *ProductImage                { return this.Image }
 func (this ConfigurableProduct) GetSmallImage() *ProductImage           { return this.SmallImage }
@@ -847,6 +874,18 @@ type ConfigurableProductOptionsValues struct {
 type ConfigurableVariant struct {
 	Attributes []*ConfigurableAttributeOption `json:"attributes,omitempty"`
 	Product    *SimpleProduct                 `json:"product,omitempty"`
+}
+
+type CreateProductReviewInput struct {
+	Sku      string                      `json:"sku"`
+	Nickname string                      `json:"nickname"`
+	Summary  string                      `json:"summary"`
+	Text     string                      `json:"text"`
+	Ratings  []*ProductReviewRatingInput `json:"ratings"`
+}
+
+type CreateProductReviewOutput struct {
+	Review *ProductReview `json:"review"`
 }
 
 type CustomizableAreaOption struct {
@@ -1083,6 +1122,8 @@ type GroupedProduct struct {
 	CountryOfManufacture *string                       `json:"country_of_manufacture,omitempty"`
 	Manufacturer         *int                          `json:"manufacturer,omitempty"`
 	GiftMessageAvailable *bool                         `json:"gift_message_available,omitempty"`
+	IsPersonalizable     *bool                         `json:"is_personalizable,omitempty"`
+	IsVirtual            *bool                         `json:"is_virtual,omitempty"`
 	CanonicalURL         *string                       `json:"canonical_url,omitempty"`
 	Image                *ProductImage                 `json:"image,omitempty"`
 	SmallImage           *ProductImage                 `json:"small_image,omitempty"`
@@ -1145,6 +1186,8 @@ func (this GroupedProduct) GetUpdatedAt() *string                  { return this
 func (this GroupedProduct) GetCountryOfManufacture() *string       { return this.CountryOfManufacture }
 func (this GroupedProduct) GetManufacturer() *int                  { return this.Manufacturer }
 func (this GroupedProduct) GetGiftMessageAvailable() *bool         { return this.GiftMessageAvailable }
+func (this GroupedProduct) GetIsPersonalizable() *bool             { return this.IsPersonalizable }
+func (this GroupedProduct) GetIsVirtual() *bool                    { return this.IsVirtual }
 func (this GroupedProduct) GetCanonicalURL() *string               { return this.CanonicalURL }
 func (this GroupedProduct) GetImage() *ProductImage                { return this.Image }
 func (this GroupedProduct) GetSmallImage() *ProductImage           { return this.SmallImage }
@@ -1334,6 +1377,9 @@ type Money struct {
 	Currency *CurrencyEnum `json:"currency,omitempty"`
 }
 
+type Mutation struct {
+}
+
 type Price struct {
 	Amount      *Money             `json:"amount,omitempty"`
 	Adjustments []*PriceAdjustment `json:"adjustments,omitempty"`
@@ -1351,13 +1397,35 @@ type PriceRange struct {
 }
 
 type ProductAttributeFilterInput struct {
-	CategoryID      *FilterEqualTypeInput `json:"category_id,omitempty"`
-	CategoryUID     *FilterEqualTypeInput `json:"category_uid,omitempty"`
-	CategoryURLPath *FilterEqualTypeInput `json:"category_url_path,omitempty"`
-	URLKey          *FilterEqualTypeInput `json:"url_key,omitempty"`
-	Sku             *FilterEqualTypeInput `json:"sku,omitempty"`
-	Name            *FilterMatchTypeInput `json:"name,omitempty"`
-	Price           *FilterRangeTypeInput `json:"price,omitempty"`
+	CategoryID        *FilterEqualTypeInput `json:"category_id,omitempty"`
+	CategoryUID       *FilterEqualTypeInput `json:"category_uid,omitempty"`
+	CategoryURLPath   *FilterEqualTypeInput `json:"category_url_path,omitempty"`
+	URLKey            *FilterEqualTypeInput `json:"url_key,omitempty"`
+	Sku               *FilterEqualTypeInput `json:"sku,omitempty"`
+	Name              *FilterMatchTypeInput `json:"name,omitempty"`
+	Price             *FilterRangeTypeInput `json:"price,omitempty"`
+	Activity          *FilterEqualTypeInput `json:"activity,omitempty"`
+	CategoryGear      *FilterEqualTypeInput `json:"category_gear,omitempty"`
+	Climate           *FilterEqualTypeInput `json:"climate,omitempty"`
+	Collar            *FilterEqualTypeInput `json:"collar,omitempty"`
+	Color             *FilterEqualTypeInput `json:"color,omitempty"`
+	EcoCollection     *FilterEqualTypeInput `json:"eco_collection,omitempty"`
+	ErinRecommends    *FilterEqualTypeInput `json:"erin_recommends,omitempty"`
+	FeaturesBags      *FilterEqualTypeInput `json:"features_bags,omitempty"`
+	Format            *FilterEqualTypeInput `json:"format,omitempty"`
+	Gender            *FilterEqualTypeInput `json:"gender,omitempty"`
+	Manufacturer      *FilterEqualTypeInput `json:"manufacturer,omitempty"`
+	Material          *FilterEqualTypeInput `json:"material,omitempty"`
+	New               *FilterEqualTypeInput `json:"new,omitempty"`
+	Pattern           *FilterEqualTypeInput `json:"pattern,omitempty"`
+	PerformanceFabric *FilterEqualTypeInput `json:"performance_fabric,omitempty"`
+	Sale              *FilterEqualTypeInput `json:"sale,omitempty"`
+	Size              *FilterEqualTypeInput `json:"size,omitempty"`
+	Sleeve            *FilterEqualTypeInput `json:"sleeve,omitempty"`
+	StrapBags         *FilterEqualTypeInput `json:"strap_bags,omitempty"`
+	StyleBags         *FilterEqualTypeInput `json:"style_bags,omitempty"`
+	StyleBottom       *FilterEqualTypeInput `json:"style_bottom,omitempty"`
+	StyleGeneral      *FilterEqualTypeInput `json:"style_general,omitempty"`
 }
 
 type ProductAttributeSortInput struct {
@@ -1441,6 +1509,26 @@ type ProductReviewRating struct {
 	Value string `json:"value"`
 }
 
+type ProductReviewRatingInput struct {
+	ID      string `json:"id"`
+	ValueID string `json:"value_id"`
+}
+
+type ProductReviewRatingMetadata struct {
+	ID     string                              `json:"id"`
+	Name   string                              `json:"name"`
+	Values []*ProductReviewRatingValueMetadata `json:"values"`
+}
+
+type ProductReviewRatingValueMetadata struct {
+	Value   string `json:"value"`
+	ValueID string `json:"value_id"`
+}
+
+type ProductReviewRatingsMetadata struct {
+	Items []*ProductReviewRatingMetadata `json:"items"`
+}
+
 type ProductReviews struct {
 	Items    []*ProductReview      `json:"items"`
 	PageInfo *SearchResultPageInfo `json:"page_info"`
@@ -1514,6 +1602,8 @@ type SimpleProduct struct {
 	CountryOfManufacture *string                       `json:"country_of_manufacture,omitempty"`
 	Manufacturer         *int                          `json:"manufacturer,omitempty"`
 	GiftMessageAvailable *bool                         `json:"gift_message_available,omitempty"`
+	IsPersonalizable     *bool                         `json:"is_personalizable,omitempty"`
+	IsVirtual            *bool                         `json:"is_virtual,omitempty"`
 	CanonicalURL         *string                       `json:"canonical_url,omitempty"`
 	Image                *ProductImage                 `json:"image,omitempty"`
 	SmallImage           *ProductImage                 `json:"small_image,omitempty"`
@@ -1575,6 +1665,8 @@ func (this SimpleProduct) GetUpdatedAt() *string                  { return this.
 func (this SimpleProduct) GetCountryOfManufacture() *string       { return this.CountryOfManufacture }
 func (this SimpleProduct) GetManufacturer() *int                  { return this.Manufacturer }
 func (this SimpleProduct) GetGiftMessageAvailable() *bool         { return this.GiftMessageAvailable }
+func (this SimpleProduct) GetIsPersonalizable() *bool             { return this.IsPersonalizable }
+func (this SimpleProduct) GetIsVirtual() *bool                    { return this.IsVirtual }
 func (this SimpleProduct) GetCanonicalURL() *string               { return this.CanonicalURL }
 func (this SimpleProduct) GetImage() *ProductImage                { return this.Image }
 func (this SimpleProduct) GetSmallImage() *ProductImage           { return this.SmallImage }
@@ -1779,6 +1871,8 @@ type VirtualProduct struct {
 	CountryOfManufacture *string                       `json:"country_of_manufacture,omitempty"`
 	Manufacturer         *int                          `json:"manufacturer,omitempty"`
 	GiftMessageAvailable *bool                         `json:"gift_message_available,omitempty"`
+	IsPersonalizable     *bool                         `json:"is_personalizable,omitempty"`
+	IsVirtual            *bool                         `json:"is_virtual,omitempty"`
 	CanonicalURL         *string                       `json:"canonical_url,omitempty"`
 	Image                *ProductImage                 `json:"image,omitempty"`
 	SmallImage           *ProductImage                 `json:"small_image,omitempty"`
@@ -1839,6 +1933,8 @@ func (this VirtualProduct) GetUpdatedAt() *string                  { return this
 func (this VirtualProduct) GetCountryOfManufacture() *string       { return this.CountryOfManufacture }
 func (this VirtualProduct) GetManufacturer() *int                  { return this.Manufacturer }
 func (this VirtualProduct) GetGiftMessageAvailable() *bool         { return this.GiftMessageAvailable }
+func (this VirtualProduct) GetIsPersonalizable() *bool             { return this.IsPersonalizable }
+func (this VirtualProduct) GetIsVirtual() *bool                    { return this.IsVirtual }
 func (this VirtualProduct) GetCanonicalURL() *string               { return this.CanonicalURL }
 func (this VirtualProduct) GetImage() *ProductImage                { return this.Image }
 func (this VirtualProduct) GetSmallImage() *ProductImage           { return this.SmallImage }

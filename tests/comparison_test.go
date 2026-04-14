@@ -272,6 +272,20 @@ func reportDiffs(t *testing.T, diffs []diff) {
 	t.Logf("Total differences: %d", len(diffs))
 }
 
+func getCategory(res *queryResult) interface{} {
+	if res.Data == nil {
+		return nil
+	}
+	return res.Data["category"]
+}
+
+func getCategoryList(res *queryResult) interface{} {
+	if res.Data == nil {
+		return nil
+	}
+	return res.Data["categoryList"]
+}
+
 // ---------- comparison tests ----------
 
 func TestCompareBasicSKULookup(t *testing.T) {
@@ -1023,4 +1037,43 @@ func TestComparePerformance(t *testing.T) {
 
 		t.Logf("%-25s %12v %12v %9.1fx", q.name, goAvg.Round(time.Millisecond), mageAvg.Round(time.Millisecond), speedup)
 	}
+}
+
+// ─── Category Comparison ──────────────────────────────────────────────────────
+
+func TestCompareCategoryByID(t *testing.T) {
+	query := `{
+		category(id: 3) {
+			id
+			name
+			url_key
+			url_path
+			level
+			position
+			canonical_url
+		}
+	}`
+
+	goRes, mageRes := queryBoth(t, query)
+
+	ignore := map[string]bool{}
+	diffs := deepDiff("category", getCategory(goRes), getCategory(mageRes), ignore)
+	reportDiffs(t, diffs)
+}
+
+func TestCompareCategoryList(t *testing.T) {
+	query := `{
+		categoryList(filters: {parent_id: {eq: "2"}}) {
+			id
+			name
+			url_key
+			level
+		}
+	}`
+
+	goRes, mageRes := queryBoth(t, query)
+
+	ignore := map[string]bool{}
+	diffs := deepDiff("categoryList", getCategoryList(goRes), getCategoryList(mageRes), ignore)
+	reportDiffs(t, diffs)
 }

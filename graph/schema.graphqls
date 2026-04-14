@@ -11,6 +11,23 @@ type Query {
         currentPage: Int = 1
         sort: ProductAttributeSortInput
     ): Products
+    """Return a category tree, filtered by its IDs, url_key, url_path, or other attributes."""
+    categories(
+        filters: CategoryFilterInput
+        pageSize: Int = 20
+        currentPage: Int = 1
+    ): CategoryResult
+    """Deprecated: use categories instead."""
+    categoryList(filters: CategoryFilterInput): [CategoryTree]
+    """Deprecated: use categories instead."""
+    category(id: Int): CategoryTree
+    """Returns metadata for the active ratings that can be used in a product review."""
+    productReviewRatingsMetadata: ProductReviewRatingsMetadata!
+}
+
+type Mutation {
+    """Submit a new product review. Review is created with status pending (awaiting moderation)."""
+    createProductReview(input: CreateProductReviewInput!): CreateProductReviewOutput!
 }
 
 # =============================================================================
@@ -48,6 +65,7 @@ type AggregationOption {
     count: Int
     label: String
     value: String!
+    swatch_data: SwatchDataInterface
 }
 
 input AggregationsFilterInput {
@@ -88,7 +106,29 @@ input ProductAttributeFilterInput {
     sku: FilterEqualTypeInput
     name: FilterMatchTypeInput
     price: FilterRangeTypeInput
-    # Dynamic EAV filters are handled programmatically
+    # EAV select/multiselect/boolean attributes (filterable in layered navigation)
+    activity: FilterEqualTypeInput
+    category_gear: FilterEqualTypeInput
+    climate: FilterEqualTypeInput
+    collar: FilterEqualTypeInput
+    color: FilterEqualTypeInput
+    eco_collection: FilterEqualTypeInput
+    erin_recommends: FilterEqualTypeInput
+    features_bags: FilterEqualTypeInput
+    format: FilterEqualTypeInput
+    gender: FilterEqualTypeInput
+    manufacturer: FilterEqualTypeInput
+    material: FilterEqualTypeInput
+    new: FilterEqualTypeInput
+    pattern: FilterEqualTypeInput
+    performance_fabric: FilterEqualTypeInput
+    sale: FilterEqualTypeInput
+    size: FilterEqualTypeInput
+    sleeve: FilterEqualTypeInput
+    strap_bags: FilterEqualTypeInput
+    style_bags: FilterEqualTypeInput
+    style_bottom: FilterEqualTypeInput
+    style_general: FilterEqualTypeInput
 }
 
 input FilterEqualTypeInput {
@@ -156,6 +196,8 @@ interface ProductInterface {
     country_of_manufacture: String
     manufacturer: Int
     gift_message_available: Boolean
+    is_personalizable: Boolean
+    is_virtual: Boolean
     canonical_url: String
 
     # Images
@@ -268,6 +310,8 @@ type SimpleProduct implements ProductInterface & PhysicalProductInterface & Cust
     country_of_manufacture: String
     manufacturer: Int
     gift_message_available: Boolean
+    is_personalizable: Boolean
+    is_virtual: Boolean
     canonical_url: String
     image: ProductImage
     small_image: ProductImage
@@ -333,6 +377,8 @@ type ConfigurableProduct implements ProductInterface & PhysicalProductInterface 
     country_of_manufacture: String
     manufacturer: Int
     gift_message_available: Boolean
+    is_personalizable: Boolean
+    is_virtual: Boolean
     canonical_url: String
     image: ProductImage
     small_image: ProductImage
@@ -402,6 +448,8 @@ type VirtualProduct implements ProductInterface & CustomizableProductInterface &
     country_of_manufacture: String
     manufacturer: Int
     gift_message_available: Boolean
+    is_personalizable: Boolean
+    is_virtual: Boolean
     canonical_url: String
     image: ProductImage
     small_image: ProductImage
@@ -465,6 +513,8 @@ type GroupedProduct implements ProductInterface & PhysicalProductInterface & Cus
     country_of_manufacture: String
     manufacturer: Int
     gift_message_available: Boolean
+    is_personalizable: Boolean
+    is_virtual: Boolean
     canonical_url: String
     image: ProductImage
     small_image: ProductImage
@@ -532,6 +582,8 @@ type BundleProduct implements ProductInterface & PhysicalProductInterface & Cust
     country_of_manufacture: String
     manufacturer: Int
     gift_message_available: Boolean
+    is_personalizable: Boolean
+    is_virtual: Boolean
     canonical_url: String
     image: ProductImage
     small_image: ProductImage
@@ -847,6 +899,26 @@ type ProductLink {
 }
 
 # =============================================================================
+# Category Filter / Result
+# =============================================================================
+
+input CategoryFilterInput {
+    ids: FilterEqualTypeInput
+    name: FilterMatchTypeInput
+    parent_id: FilterEqualTypeInput
+    url_key: FilterEqualTypeInput
+    url_path: FilterEqualTypeInput
+    category_uid: FilterEqualTypeInput
+    parent_category_uid: FilterEqualTypeInput
+}
+
+type CategoryResult {
+    items: [CategoryTree]
+    page_info: SearchResultPageInfo
+    total_count: Int
+}
+
+# =============================================================================
 # Category Types
 # =============================================================================
 
@@ -933,6 +1005,42 @@ type ProductReview {
 type ProductReviewRating {
     name: String!
     value: String!
+}
+
+# =============================================================================
+# Review mutations and metadata
+# =============================================================================
+
+input CreateProductReviewInput {
+    sku: String!
+    nickname: String!
+    summary: String!
+    text: String!
+    ratings: [ProductReviewRatingInput!]!
+}
+
+input ProductReviewRatingInput {
+    id: ID!
+    value_id: ID!
+}
+
+type CreateProductReviewOutput {
+    review: ProductReview!
+}
+
+type ProductReviewRatingsMetadata {
+    items: [ProductReviewRatingMetadata!]!
+}
+
+type ProductReviewRatingMetadata {
+    id: ID!
+    name: String!
+    values: [ProductReviewRatingValueMetadata!]!
+}
+
+type ProductReviewRatingValueMetadata {
+    value: String!
+    value_id: ID!
 }
 
 # =============================================================================

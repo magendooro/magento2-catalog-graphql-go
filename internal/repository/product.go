@@ -20,6 +20,7 @@ func NewProductRepository(db *sql.DB, attrRepo *AttributeRepository) *ProductRep
 	return &ProductRepository{db: db, attrRepo: attrRepo}
 }
 
+
 // ProductEAVValues holds flattened EAV attribute values for a product.
 type ProductEAVValues struct {
 	EntityID         int
@@ -49,9 +50,11 @@ type ProductEAVValues struct {
 	Status           *int
 	Visibility       *int
 	Manufacturer     *int
-	CountryOfMfg     *string
-	OptionsContainer *string
-	GiftMsgAvail     *string
+	CountryOfMfg      *string
+	OptionsContainer  *string
+	GiftMsgAvail      *string
+	IsPersonalizable  *string
+	IsVirtual         *string
 }
 
 // eavJoinDef defines an EAV attribute JOIN for the product query.
@@ -84,7 +87,9 @@ var coreEAVAttributes = []eavJoinDef{
 	{"com", "country_of_manufacture"},
 	{"oc", "options_container"},
 	{"gma", "gift_message_available"},
+	{"isp", "is_personalizable"},
 	{"swimg", "swatch_image"},
+	{"isv", "is_virtual"},
 }
 
 // FindProducts queries products with EAV attributes resolved via optimized JOINs.
@@ -184,8 +189,8 @@ func (r *ProductRepository) FindProducts(ctx context.Context, storeID int, searc
 			&p.NewFromDate, &p.NewToDate,
 			&p.Weight, &p.Status, &p.Visibility,
 			&p.Manufacturer, &p.CountryOfMfg,
-			&p.OptionsContainer, &p.GiftMsgAvail,
-			&p.SwatchImage,
+			&p.OptionsContainer, &p.GiftMsgAvail, &p.IsPersonalizable,
+			&p.SwatchImage, &p.IsVirtual,
 		)
 		if err != nil {
 			return nil, 0, nil, fmt.Errorf("scan failed: %w", err)
@@ -311,8 +316,8 @@ func (r *ProductRepository) FindProductsByIDs(ctx context.Context, storeID int, 
 			&p.NewFromDate, &p.NewToDate,
 			&p.Weight, &p.Status, &p.Visibility,
 			&p.Manufacturer, &p.CountryOfMfg,
-			&p.OptionsContainer, &p.GiftMsgAvail,
-			&p.SwatchImage,
+			&p.OptionsContainer, &p.GiftMsgAvail, &p.IsPersonalizable,
+			&p.SwatchImage, &p.IsVirtual,
 		)
 		if err != nil {
 			return nil, 0, nil, fmt.Errorf("scan product by ID: %w", err)
@@ -450,31 +455,43 @@ func (r *ProductRepository) buildFilterConditions(storeID int, search *string, f
 	}
 	if filter.CategoryID != nil {
 		if filter.CategoryID.Eq != nil {
-			conditions = append(conditions, "cpe.entity_id IN (SELECT product_id FROM catalog_category_product WHERE category_id = ?)")
-			args = append(args, *filter.CategoryID.Eq)
+			sql, sqlArgs := categoryHierarchySQL([]string{*filter.CategoryID.Eq})
+			conditions = append(conditions, sql)
+			args = append(args, sqlArgs...)
 		}
 		if len(filter.CategoryID.In) > 0 {
-			placeholders := make([]string, len(filter.CategoryID.In))
-			for i, v := range filter.CategoryID.In {
-				placeholders[i] = "?"
-				args = append(args, *v)
+			vals := make([]string, 0, len(filter.CategoryID.In))
+			for _, v := range filter.CategoryID.In {
+				if v != nil {
+					vals = append(vals, *v)
+				}
 			}
-			conditions = append(conditions, "cpe.entity_id IN (SELECT product_id FROM catalog_category_product WHERE category_id IN ("+strings.Join(placeholders, ",")+"))")
+			if len(vals) > 0 {
+				sql, sqlArgs := categoryHierarchySQL(vals)
+				conditions = append(conditions, sql)
+				args = append(args, sqlArgs...)
+			}
 		}
 	}
 	if filter.CategoryUID != nil {
 		if filter.CategoryUID.Eq != nil {
 			catID := decodeMagentoUID(*filter.CategoryUID.Eq)
-			conditions = append(conditions, "cpe.entity_id IN (SELECT product_id FROM catalog_category_product WHERE category_id = ?)")
-			args = append(args, catID)
+			sql, sqlArgs := categoryHierarchySQL([]string{catID})
+			conditions = append(conditions, sql)
+			args = append(args, sqlArgs...)
 		}
 		if len(filter.CategoryUID.In) > 0 {
-			placeholders := make([]string, len(filter.CategoryUID.In))
-			for i, v := range filter.CategoryUID.In {
-				placeholders[i] = "?"
-				args = append(args, decodeMagentoUID(*v))
+			vals := make([]string, 0, len(filter.CategoryUID.In))
+			for _, v := range filter.CategoryUID.In {
+				if v != nil {
+					vals = append(vals, decodeMagentoUID(*v))
+				}
 			}
-			conditions = append(conditions, "cpe.entity_id IN (SELECT product_id FROM catalog_category_product WHERE category_id IN ("+strings.Join(placeholders, ",")+"))")
+			if len(vals) > 0 {
+				sql, sqlArgs := categoryHierarchySQL(vals)
+				conditions = append(conditions, sql)
+				args = append(args, sqlArgs...)
+			}
 		}
 	}
 	if filter.CategoryURLPath != nil {
@@ -502,7 +519,90 @@ func (r *ProductRepository) buildFilterConditions(storeID int, search *string, f
 		}
 	}
 
+	// EAV select/multiselect/boolean attribute filters.
+	// Each filter checks both the EAV flat index (for simple/non-super attributes)
+	// and catalog_product_entity_int via catalog_product_super_link (for configurable
+	// super attributes like color/size stored on child products).
+	eavFilters := []struct {
+		code   string
+		filter *model.FilterEqualTypeInput
+	}{
+		{"activity", filter.Activity},
+		{"category_gear", filter.CategoryGear},
+		{"climate", filter.Climate},
+		{"collar", filter.Collar},
+		{"color", filter.Color},
+		{"eco_collection", filter.EcoCollection},
+		{"erin_recommends", filter.ErinRecommends},
+		{"features_bags", filter.FeaturesBags},
+		{"format", filter.Format},
+		{"gender", filter.Gender},
+		{"manufacturer", filter.Manufacturer},
+		{"material", filter.Material},
+		{"new", filter.New},
+		{"pattern", filter.Pattern},
+		{"performance_fabric", filter.PerformanceFabric},
+		{"sale", filter.Sale},
+		{"size", filter.Size},
+		{"sleeve", filter.Sleeve},
+		{"strap_bags", filter.StrapBags},
+		{"style_bags", filter.StyleBags},
+		{"style_bottom", filter.StyleBottom},
+		{"style_general", filter.StyleGeneral},
+	}
+
+	for _, ef := range eavFilters {
+		if ef.filter == nil {
+			continue
+		}
+		values := extractEqualValues(ef.filter)
+		if len(values) == 0 {
+			continue
+		}
+		attrID := r.attrRepo.GetID(ef.code)
+		if attrID == 0 {
+			continue
+		}
+		ph := make([]string, len(values))
+		for i, v := range values {
+			ph[i] = "?"
+			args = append(args, v)
+		}
+		inClause := strings.Join(ph, ",")
+
+		// Match: direct EAV index OR configurable child via super_link
+		conditions = append(conditions, fmt.Sprintf(`cpe.entity_id IN (
+			SELECT cpie.entity_id FROM catalog_product_index_eav cpie
+			WHERE cpie.attribute_id = %d AND cpie.value IN (%s) AND cpie.store_id = %d
+			UNION
+			SELECT cpsl.parent_id FROM catalog_product_super_link cpsl
+			INNER JOIN catalog_product_entity_int cpei ON cpsl.product_id = cpei.entity_id
+			WHERE cpei.attribute_id = %d AND cpei.value IN (%s) AND cpei.store_id = 0
+		)`, attrID, inClause, storeID, attrID, inClause))
+		// Duplicate the args for the second IN clause
+		for _, v := range values {
+			args = append(args, v)
+		}
+	}
+
 	return
+}
+
+// extractEqualValues extracts values from a FilterEqualTypeInput (eq or in).
+func extractEqualValues(f *model.FilterEqualTypeInput) []string {
+	if f == nil {
+		return nil
+	}
+	if f.Eq != nil {
+		return []string{*f.Eq}
+	}
+	var vals []string
+	for _, v := range f.In {
+		if v != nil {
+			vals = append(vals, *v)
+		}
+	}
+	return vals
 }
 
 // buildOrderBy constructs the ORDER BY clause from sort input.
@@ -563,6 +663,42 @@ func (r *ProductRepository) coalesceCol(alias string, storeID int) string {
 	return alias + "_d.value"
 }
 
+// categoryHierarchySQL builds a SQL IN-subquery that matches products assigned to any of
+// the given category IDs OR any of their descendant categories.
+// It uses catalog_category_entity.path LIKE 'parent/path/%' for hierarchical matching.
+func categoryHierarchySQL(ids []string) (string, []interface{}) {
+	n := len(ids)
+	args := make([]interface{}, 0, n*2)
+
+	// Direct entity_id matches
+	directPH := make([]string, n)
+	for i, id := range ids {
+		directPH[i] = "?"
+		args = append(args, id)
+	}
+
+	// Descendant matches via path LIKE
+	likeConds := make([]string, n)
+	for i, id := range ids {
+		likeConds[i] = "path LIKE CONCAT((SELECT path FROM catalog_category_entity WHERE entity_id = ?), '/%')"
+		args = append(args, id)
+	}
+
+	sql := fmt.Sprintf(
+		`cpe.entity_id IN (
+			SELECT ccp.product_id FROM catalog_category_product ccp
+			WHERE ccp.category_id IN (
+				SELECT entity_id FROM catalog_category_entity
+				WHERE entity_id IN (%s)
+				   OR %s
+			)
+		)`,
+		strings.Join(directPH, ","),
+		strings.Join(likeConds, " OR "),
+	)
+	return sql, args
+}
+
 // decodeMagentoUID decodes a base64-encoded Magento UID back to the raw value.
 func decodeMagentoUID(uid string) string {
 	decoded, err := base64.StdEncoding.DecodeString(uid)
@@ -581,4 +717,18 @@ func EncodeMagentoUID(entityID int) string {
 // base64("configurable/{attribute_id}/{value_index}")
 func EncodeConfigurableUID(attributeID, valueIndex int) string {
 	return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("configurable/%d/%d", attributeID, valueIndex)))
+}
+
+// GetEntityIDBySKU resolves a product SKU to its catalog_product_entity entity_id.
+func (r *ProductRepository) GetEntityIDBySKU(ctx context.Context, sku string) (int, error) {
+	var entityID int
+	err := r.db.QueryRowContext(ctx,
+		`SELECT entity_id FROM catalog_product_entity WHERE sku = ? LIMIT 1`, sku).Scan(&entityID)
+	if err == sql.ErrNoRows {
+		return 0, fmt.Errorf("product with SKU %q not found", sku)
+	}
+	if err != nil {
+		return 0, fmt.Errorf("SKU lookup failed: %w", err)
+	}
+	return entityID, nil
 }
