@@ -6,14 +6,14 @@ steps:
   - name: clone-go-common
     image: /bin/sh
     commands:
-      - git clone http://fch:942afccad89f9e58d8287cd76ae2527eb29469cb@localhost:3000/magendoo/magento2-go-common.git ./go-common
+      - GIT_TERMINAL_PROMPT=0 git -c credential.helper= clone http://fch:942afccad89f9e58d8287cd76ae2527eb29469cb@localhost:3000/magendoo/magento2-go-common.git ./go-common
 
   - name: setup-go-workspace
     image: /bin/sh
     commands:
       - |
         cat > ./go.work <<'EOF'
-        go 1.25
+        go 1.25.0
         use (
           .
           ./go-common
