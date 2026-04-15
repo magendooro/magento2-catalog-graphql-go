@@ -6,12 +6,7 @@ steps:
   - name: clone-go-common
     image: /bin/sh
     commands:
-      - git clone http://${FORGEJO_USER}:${FORGEJO_PASSWORD}@localhost:3000/magendoo/magento2-go-common.git ./go-common
-    environment:
-      FORGEJO_USER:
-        from_secret: forgejo_user
-      FORGEJO_PASSWORD:
-        from_secret: forgejo_password
+      - git clone http://localhost:3000/magendoo/magento2-go-common.git ./go-common
 
   - name: setup-go-workspace
     image: /bin/sh
