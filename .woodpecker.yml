@@ -1,6 +1,6 @@
 ---
 when:
-  - event: push
+  - event: [push, pull_request]
 
 steps:
   - name: clone-go-common
@@ -39,7 +39,8 @@ steps:
     commands:
       - GOOS=linux GOARCH=arm64 CGO_ENABLED=0 GOTOOLCHAIN=auto go build -buildvcs=false -o catalog-server-new ./cmd/server/
     when:
-      - branch: [main, master]
+      - event: push
+        branch: [main, master]
 
   - name: deploy
     commands:
@@ -56,4 +57,5 @@ steps:
           systemctl is-active magendoo-catalog && echo 'deploy ok' || (echo 'FAILED — rolling back'; cp \$BINS/catalog.bak \$BINS/catalog; systemctl restart magendoo-catalog; exit 1)
         "
     when:
-      - branch: [main, master]
+      - event: push
+        branch: [main, master]
