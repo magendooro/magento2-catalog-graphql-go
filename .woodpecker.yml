@@ -4,6 +4,7 @@ when:
 
 steps:
   - name: clone-go-common
+    image: local
     commands:
       - git clone http://${FORGEJO_USER}:${FORGEJO_PASSWORD}@localhost:3000/magendoo/magento2-go-common.git ./go-common
     environment:
@@ -13,6 +14,7 @@ steps:
         from_secret: forgejo_password
 
   - name: setup-go-workspace
+    image: local
     commands:
       - |
         cat > ./go.work <<'EOF'
@@ -24,18 +26,22 @@ steps:
         EOF
 
   - name: build
+    image: local
     commands:
       - GOTOOLCHAIN=auto go build ./...
 
   - name: vet
+    image: local
     commands:
       - GOTOOLCHAIN=auto go vet ./...
 
   - name: test
+    image: local
     commands:
       - GOTOOLCHAIN=auto go test ./tests/ -run "^Test[^C]" -v -timeout 60s -count=1
 
   - name: cross-compile
+    image: local
     commands:
       - GOOS=linux GOARCH=arm64 CGO_ENABLED=0 GOTOOLCHAIN=auto go build -buildvcs=false -o catalog-server-new ./cmd/server/
     when:
@@ -43,6 +49,7 @@ steps:
         branch: [main, master]
 
   - name: deploy
+    image: local
     commands:
       - scp catalog-server-new deploy:/tmp/catalog-server
       - ssh deploy "
