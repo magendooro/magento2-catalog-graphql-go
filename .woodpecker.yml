@@ -6,7 +6,7 @@ steps:
   - name: clone-go-common
     image: /bin/sh
     commands:
-      - git clone http://localhost:3000/magendoo/magento2-go-common.git ./go-common
+      - git clone http://fch:942afccad89f9e58d8287cd76ae2527eb29469cb@localhost:3000/magendoo/magento2-go-common.git ./go-common
 
   - name: setup-go-workspace
     image: /bin/sh
