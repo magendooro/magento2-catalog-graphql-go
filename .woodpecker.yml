@@ -1,0 +1,59 @@
+---
+when:
+  - event: push
+
+steps:
+  - name: clone-go-common
+    commands:
+      - git clone http://${FORGEJO_USER}:${FORGEJO_PASSWORD}@localhost:3000/magendoo/magento2-go-common.git ../magento2-go-common
+    environment:
+      FORGEJO_USER:
+        from_secret: forgejo_user
+      FORGEJO_PASSWORD:
+        from_secret: forgejo_password
+
+  - name: setup-go-workspace
+    commands:
+      - |
+        cat > ../go.work <<'EOF'
+        go 1.25
+        use (
+          .
+          ../magento2-go-common
+        )
+        EOF
+
+  - name: build
+    commands:
+      - GOTOOLCHAIN=auto go build ./...
+
+  - name: vet
+    commands:
+      - GOTOOLCHAIN=auto go vet ./...
+
+  - name: test
+    commands:
+      - GOTOOLCHAIN=auto go test ./tests/ -run "^Test[^C]" -v -timeout 60s -count=1
+
+  - name: cross-compile
+    commands:
+      - GOOS=linux GOARCH=arm64 CGO_ENABLED=0 GOTOOLCHAIN=auto go build -buildvcs=false -o catalog-server-new ./cmd/server/
+    when:
+      - branch: [main, master]
+
+  - name: deploy
+    commands:
+      - scp catalog-server-new deploy:/tmp/catalog-server
+      - ssh deploy "
+          set -e
+          BINS=/srv/magendoo/bins
+          [ -f \$BINS/catalog ] && cp \$BINS/catalog \$BINS/catalog.bak
+          cp /tmp/catalog-server \$BINS/catalog.new
+          chmod +x \$BINS/catalog.new
+          mv \$BINS/catalog.new \$BINS/catalog
+          systemctl restart magendoo-catalog
+          sleep 3
+          systemctl is-active magendoo-catalog && echo 'deploy ok' || (echo 'FAILED — rolling back'; cp \$BINS/catalog.bak \$BINS/catalog; systemctl restart magendoo-catalog; exit 1)
+        "
+    when:
+      - branch: [main, master]
